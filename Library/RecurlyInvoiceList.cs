@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Web;
 using System.Xml;
-using System.Text;
 using Recurly.Properties;
 
 namespace Recurly
