@@ -302,15 +302,12 @@ namespace Recurly.Properties {
             }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("/accounts/{0}/redemption")]
         public string PathAccountCouponRedemption {
             get {
                 return ((string)(this["PathAccountCouponRedemption"]));
-            }
-            set {
-                this["PathAccountCouponRedemption"] = value;
             }
         }
         

@@ -95,7 +95,7 @@
     <Setting Name="PathInvoiceCouponRedemption" Type="System.String" Scope="Application">
       <Value Profile="(Default)">/invoices/{0}/redemption</Value>
     </Setting>
-    <Setting Name="PathAccountCouponRedemption" Type="System.String" Scope="User">
+    <Setting Name="PathAccountCouponRedemption" Type="System.String" Scope="Application">
       <Value Profile="(Default)">/accounts/{0}/redemption</Value>
     </Setting>
     <Setting Name="PathInvoiceGet" Type="System.String" Scope="Application">
