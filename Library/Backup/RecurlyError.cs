@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Xml;
 
 namespace Recurly
@@ -31,26 +32,29 @@ namespace Recurly
             {
                 try
                 {
-                    Field = reader.GetAttribute("field");
+                    this.Field = reader.GetAttribute("field");
                 }
                 catch (ArgumentOutOfRangeException)
                 { }
                 try
                 {
-                    Code = reader.GetAttribute("code");
+                    this.Code = reader.GetAttribute("code");
                 }
                 catch (ArgumentOutOfRangeException)
                 { }
             }
 
-            Message = reader.ReadElementContentAsString();
+            this.Message = reader.ReadElementContentAsString();
         }
 
         public override string ToString()
         {
-            if (!String.IsNullOrEmpty(Field))
-                return String.Format("{0} (Field: {1})", Message, Field);
-            return !String.IsNullOrEmpty(Code) ? String.Format("{0} (Code: {1})", Message, Code) : Message;
+            if (!String.IsNullOrEmpty(this.Field))
+                return String.Format("{0} (Field: {1})", this.Message, this.Field);
+            else if (!String.IsNullOrEmpty(this.Code))
+                return String.Format("{0} (Code: {1})", this.Message, this.Code);
+            else
+                return this.Message;
         }
 
         internal static RecurlyError[] ReadResponseAndParseErrors(HttpWebResponse response)
@@ -58,16 +62,13 @@ namespace Recurly
             if (response == null)
                 return new RecurlyError[0];
 
-            using (var responseStream = response.GetResponseStream())
+            using (Stream responseStream = response.GetResponseStream())
             {
-                var errors = new List<RecurlyError>();
+                List<RecurlyError> errors = new List<RecurlyError>();
 
                 try
                 {
-                    if(responseStream == null)
-                        throw new Exception("The response stream returned is null");
-
-                    using (var xmlReader = new XmlTextReader(responseStream))
+                    using (XmlTextReader xmlReader = new XmlTextReader(responseStream))
                     {
                         // Parse errors collection
                         while (xmlReader.Read())

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,8 +10,29 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Recurly</RootNamespace>
     <AssemblyName>Recurly</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <TargetFrameworkProfile />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,6 +42,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +51,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -39,29 +62,68 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="InvalidCredentialsException.cs" />
+    <Compile Include="IRecurlyPagedList.cs" />
     <Compile Include="NotFoundException.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
     <Compile Include="RecurlyAccount.cs" />
-    <Compile Include="RecurlyAccountCoupon.cs" />
+    <Compile Include="RecurlyAccountList.cs" />
+    <Compile Include="RecurlyAccountNote.cs" />
+    <Compile Include="RecurlyAccountNoteList.cs" />
+    <Compile Include="RecurlyAddress.cs" />
+    <Compile Include="RecurlyAdjustment.cs" />
+    <Compile Include="RecurlyAdjustmentList.cs" />
+    <Compile Include="RecurlyCoupon.cs" />
     <Compile Include="RecurlyBillingInfo.cs" />
-    <Compile Include="RecurlyCharge.cs" />
+    <Compile Include="RecurlyCouponList.cs" />
+    <Compile Include="RecurlyCouponRedemption.cs" />
+    <Compile Include="RecurlyInCentsItem.cs" />
+    <Compile Include="RecurlyInCentsMapping.cs" />
+    <Compile Include="RecurlyPayPalBillingInfo.cs" />
+    <Compile Include="RecurlySubscriptionList.cs" />
+    <Compile Include="RecurlyUtilities.cs" />
     <Compile Include="RecurlyInvoiceList.cs" />
-    <Compile Include="RecurlyLineItemList.cs" />
     <Compile Include="RecurlyClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RecurlyCredit.cs" />
-    <Compile Include="RecurlyCreditCard.cs" />
+    <Compile Include="RecurlyCreditCardBillingInfo.cs" />
     <Compile Include="RecurlyError.cs" />
     <Compile Include="RecurlyException.cs" />
     <Compile Include="RecurlyInvoice.cs" />
-    <Compile Include="RecurlyLineItem.cs" />
+    <Compile Include="RecurlyPager.cs" />
     <Compile Include="RecurlyPlan.cs" />
     <Compile Include="Configuration\RecurlySection.cs" />
+    <Compile Include="RecurlyPlanAddon.cs" />
+    <Compile Include="RecurlyPlanAddonList.cs" />
+    <Compile Include="RecurlyPlanList.cs" />
     <Compile Include="RecurlyServerException.cs" />
     <Compile Include="RecurlySubscription.cs" />
     <Compile Include="RecurlyTransaction.cs" />
     <Compile Include="RecurlyTransactionList.cs" />
+    <Compile Include="RecurlySubscriptionAddon.cs" />
     <Compile Include="TemporarilyUnavailableException.cs" />
     <Compile Include="ValidationException.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

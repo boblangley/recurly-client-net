@@ -1,0 +1,141 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Recurly.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="PathPlanAddonsList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/plans/{0}/add_ons</Value>
+    </Setting>
+    <Setting Name="PathPlanAddonGet" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/plans/{0}/add_ons/{1}</Value>
+    </Setting>
+    <Setting Name="PathPlanAddonCRUD" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/plans/{0}/add_ons</Value>
+    </Setting>
+    <Setting Name="PathSubscriptionsList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/subscriptions</Value>
+    </Setting>
+    <Setting Name="PathAccountSubscriptionsList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/accounts/{0}/subscriptions</Value>
+    </Setting>
+    <Setting Name="PathSubscriptionGet" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/subscriptions/{0}</Value>
+    </Setting>
+    <Setting Name="PathSubscriptionCreate" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/subscriptions</Value>
+    </Setting>
+    <Setting Name="PathSubscriptionUpdate" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/subscriptions/{0}</Value>
+    </Setting>
+    <Setting Name="PathSubscriptionCancel" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/subscriptions/{0}/cancel</Value>
+    </Setting>
+    <Setting Name="PathSubscriptionReactivate" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/subscriptions/{0}/reactivate</Value>
+    </Setting>
+    <Setting Name="PathSubscriptionPostpone" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/subscriptions/{0}/postpone?next_renewal_date={1}</Value>
+    </Setting>
+    <Setting Name="PathSubscriptionTerminate" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/subscriptions/{0}/terminate?refund={1}</Value>
+    </Setting>
+    <Setting Name="PathInvoicesList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/invoices</Value>
+    </Setting>
+    <Setting Name="PathAccountInvoicesList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/accounts/{0}/invoices</Value>
+    </Setting>
+    <Setting Name="PathPlansList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/plans</Value>
+    </Setting>
+    <Setting Name="PathAccountsList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/accounts</Value>
+    </Setting>
+    <Setting Name="PathAccountCreate" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/accounts</Value>
+    </Setting>
+    <Setting Name="PathAccountUpdate" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/accounts/{0}</Value>
+    </Setting>
+    <Setting Name="PathAccountClose" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/accounts/{0}</Value>
+    </Setting>
+    <Setting Name="PathAccountReopen" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/accounts/{0}/reopen</Value>
+    </Setting>
+    <Setting Name="PathAccountNotesList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/accounts/{0}/notes</Value>
+    </Setting>
+    <Setting Name="PathAccountAdjustmentsList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/accounts/{0}/adjustments</Value>
+    </Setting>
+    <Setting Name="PathAccountAdjustmentCreate" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/accounts/{0}/adjustments</Value>
+    </Setting>
+    <Setting Name="PathAccountAdjustmentDelete" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/adjustments/{0}</Value>
+    </Setting>
+    <Setting Name="PathAccountBillingInfoGet" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/accounts/{0}/billing_info</Value>
+    </Setting>
+    <Setting Name="PathCouponsList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/coupons</Value>
+    </Setting>
+    <Setting Name="PathCouponGet" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/coupons/{0}</Value>
+    </Setting>
+    <Setting Name="PathCouponCreate" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/coupons</Value>
+    </Setting>
+    <Setting Name="PathCouponDeactivate" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/coupons/{0}</Value>
+    </Setting>
+    <Setting Name="PathRedeemCoupon" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/coupons/{0}/redeem</Value>
+    </Setting>
+    <Setting Name="PathInvoiceCouponRedemption" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/invoices/{0}/redemption</Value>
+    </Setting>
+    <Setting Name="PathAccountCouponRedemption" Type="System.String" Scope="User">
+      <Value Profile="(Default)">/accounts/{0}/redemption</Value>
+    </Setting>
+    <Setting Name="PathInvoiceGet" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/invoices/{0}</Value>
+    </Setting>
+    <Setting Name="PathAccountInvoicePendingCharges" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/accounts/{0}/invoices</Value>
+    </Setting>
+    <Setting Name="PathInvoiceMarkSuccessful" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/invoices/{0}/mark_successful</Value>
+    </Setting>
+    <Setting Name="PathInvoiceMarkFailed" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/invoices/{0}/mark_failed</Value>
+    </Setting>
+    <Setting Name="PathPlanGet" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/plans/{0}</Value>
+    </Setting>
+    <Setting Name="PathPlanCreate" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/plans</Value>
+    </Setting>
+    <Setting Name="PathPlanUpdate" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/plans/{0}</Value>
+    </Setting>
+    <Setting Name="PathPlanDelete" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/plans/{0}</Value>
+    </Setting>
+    <Setting Name="PathTransactionGet" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/transactions/{0}</Value>
+    </Setting>
+    <Setting Name="PathTransactionFullRefund" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/transactions/{0}</Value>
+    </Setting>
+    <Setting Name="PathTransactionPartialRefund" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/transactions/{0}?amount_in_cents={1}</Value>
+    </Setting>
+    <Setting Name="PathTransactionsList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/transactions</Value>
+    </Setting>
+    <Setting Name="PathAccountTransactionsList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">/account/{0}/transactions</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

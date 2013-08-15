@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Text;
 using System.Xml;
+using Recurly.Properties;
 
 namespace Recurly
 {
@@ -11,29 +10,55 @@ namespace Recurly
     /// </summary>
     public class RecurlyAccount
     {
-        /// <summary>
-        /// Account Code or unique ID for the account in Recurly
-        /// </summary>
+        public enum AccountState
+        {
+            Active,
+            Closed,
+            Past_Due
+        }
+        
+        internal const string ElementName = "account";
+
+        private const string AccountCodeElement = "account_code";
         public string AccountCode { get; private set; }
+        private const string EmailElement = "email";
         public string Email { get; set; }
+        private const string UsernameElement = "username";
         public string Username { get; set; }
+        private const string FirstNameElement = "first_name";
         public string FirstName { get; set; }
+        private const string LastNameElement = "last_name";
         public string LastName { get; set; }
+
+        public const string StateElement = "state";
+        public AccountState State { get; private set; }
+
+        //public string VatNumber { get; set; }
+        private const string CompanyNameElement = "company_name";
         public string CompanyName { get; set; }
-        public RecurlyBillingInfo BillingInfo { get; set; }
+        private const string AcceptLanguageElement = "accept_language";
         public string AcceptLanguage { get; set; }
+
+        private const string CreatedAtElement = "created_at";
+        public DateTime CreatedAt { get; private set; }
+                
+        public RecurlyAddress Address { get; set; }
+
+        private RecurlyBillingInfo _billingInfo;
+
+        private const string HostedLoginTokenElement = "hosted_login_token";
         public string HostedLoginToken { get; private set; }
 
         internal const string UrlPrefix = "/accounts/";
 
         public RecurlyAccount(string accountCode)
         {
-            this.AccountCode = accountCode;
+            AccountCode = accountCode;
         }
 
         internal RecurlyAccount(XmlTextReader xmlReader)
         {
-            this.ReadXml(xmlReader);
+            ReadXml(xmlReader);
         }
 
         private RecurlyAccount()
@@ -46,141 +71,236 @@ namespace Recurly
         /// <returns></returns>
         public static RecurlyAccount Get(string accountCode)
         {
-            RecurlyAccount account = new RecurlyAccount();
+            var account = new RecurlyAccount();
 
-            HttpStatusCode statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Get,
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Get,
                 UrlPrefix + System.Web.HttpUtility.UrlEncode(accountCode),
-                new RecurlyClient.ReadXmlDelegate(account.ReadXml));
+                account.ReadXml);
 
-            if (statusCode == HttpStatusCode.NotFound)
-                return null;
-
-            return account;
+            return statusCode == HttpStatusCode.NotFound ? null : account;
         }
 
         /// <summary>
         /// Create a new account in Recurly
         /// </summary>
-        public void Create()
+        public void Create(RecurlyBillingInfo billingInfo = null)
         {
+            _billingInfo = billingInfo;
+
             RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Post, 
-                UrlPrefix,
-                new RecurlyClient.WriteXmlDelegate(this.WriteXml));
+                Settings.Default.PathAccountCreate,
+                writer => WriteXml(writer),
+                ReadXml,
+                null);
         }
 
         /// <summary>
         /// Update an existing account in Recurly
         /// </summary>
-        public void Update()
+        public void Update(RecurlyBillingInfo billingInfo = null)
         {
+            _billingInfo = billingInfo;
+
             RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put, 
-                UrlPrefix + System.Web.HttpUtility.UrlEncode(this.AccountCode),
-                new RecurlyClient.WriteXmlDelegate(this.WriteXml));
+                String.Format(Settings.Default.PathAccountUpdate, System.Web.HttpUtility.UrlEncode(AccountCode)),
+                writer => WriteXml(writer,false));
         }
 
         /// <summary>
-        /// Close the account and cancel any active subscriptions (if there is one).
-        /// Note: This does not create a refund for any time remaining.
+        /// Marks an account as closed and cancels any active subscriptions. Any saved billing information will also be permanently removed from the account.
         /// </summary>
-        public void CloseAccount()
+        public void Close()
         {
-            CloseAccount(this.AccountCode);
+            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
+                                         String.Format(Settings.Default.PathAccountClose, AccountCode));
         }
 
         /// <summary>
-        /// Close the account and cancel any active subscriptions (if there is one).
-        /// Note: This does not create a refund for any time remaining.
+        ///  Transitions a closed account back to active.
         /// </summary>
-        /// <param name="id">Account Code</param>
-        public static void CloseAccount(string accountCode)
+        public void Reopen()
         {
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete, UrlPrefix + System.Web.HttpUtility.UrlEncode(accountCode));
+            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
+                                         String.Format(Settings.Default.PathAccountReopen, AccountCode));
         }
 
         /// <summary>
-        /// Lookup the active coupon for this account.
+        /// Retrieves the accounts BillingInfo
         /// </summary>
         /// <returns></returns>
-        public RecurlyAccountCoupon GetActiveCoupon()
+        public RecurlyBillingInfo GetBillingInfo()
         {
-            return RecurlyAccountCoupon.Get(this.AccountCode);
+            return RecurlyBillingInfo.Get(AccountCode);
         }
 
         /// <summary>
-        /// Redeem a coupon on the account.
+        /// Deletes the account BillingInfo
         /// </summary>
-        /// <param name="couponCode"></param>
-        /// <returns></returns>
-        public RecurlyAccountCoupon RedeemCoupon(string couponCode)
+        public void DeleteBillingInfo()
         {
-            return RecurlyAccountCoupon.Redeem(this.AccountCode, couponCode);
+            RecurlyBillingInfo.DeleteBillingInfo(AccountCode);
+        }
+
+        /// <summary>
+        /// Returns a list of the notes on an account sorted in descending order.
+        /// </summary>
+        /// <returns>Paged list of notes</returns>
+        public RecurlyAccountNoteList ListAccountNotes()
+        {
+            return RecurlyAccountNoteList.ListAccountNotes(AccountCode);
+        }
+
+        /// <summary>
+        /// Lists all charges and credits issued for a given account.
+        /// </summary>
+        /// <param name="type">The type of adjustment to return</param>
+        /// <param name="state">The state of the adjustments to return</param>
+        /// <param name="pageSize">Number of records to return per page</param>
+        /// <returns>Paged list of adjustments</returns>
+        public RecurlyAdjustmentList ListAdjustments(
+            RecurlyAdjustment.AdjustmentType type = RecurlyAdjustment.AdjustmentType.All,
+            RecurlyAdjustment.AdjustmentState state = RecurlyAdjustment.AdjustmentState.Active,
+            int pageSize = RecurlyPager.DefaultPageSize)
+        {
+            return RecurlyAdjustmentList.ListAccountAdjustments(AccountCode, type, state, pageSize);
+        }        
+
+        private RecurlyAdjustment Adjust(int unitAmountInCents, string description, string accountingCode = null,
+                                        string currency = null, int quantity = 1)
+        {
+            var adjustment = new RecurlyAdjustment(AccountCode, unitAmountInCents)
+                {
+                    Description = description,
+                    Currency = string.IsNullOrWhiteSpace(currency) ? RecurlyClient.Currency : currency,
+                    Quantity = quantity
+                };
+            return adjustment.Create() ? adjustment : null;
+        }
+
+        public RecurlyAdjustment Charge(int unitAmountInCents, string description, string accountingCode = null,
+                                string currency = null, int quantity = 1)
+        {
+            if (unitAmountInCents < 1) throw new ArgumentOutOfRangeException("unitAmountInCents","Unit amount must be greater than 0");
+            return Adjust(unitAmountInCents, description, accountingCode, currency, quantity);
+        }
+
+
+        public RecurlyAdjustment Credit(int unitAmountInCents, string description, string accountingCode = null,
+                                        string currency = null, int quantity = 1)
+        {
+            if(unitAmountInCents > -1) throw new ArgumentOutOfRangeException("unitAmountInCents", "Unit amount must be less than 0");
+            return Adjust(unitAmountInCents, description, accountingCode, currency, quantity);
+        }
+
+        /// <summary>
+        /// Lookup information about the 'active' coupon redemption on an account
+        /// </summary>
+        /// <returns></returns>
+        public RecurlyCouponRedemption GetCouponRedemption()
+        {
+            return RecurlyCouponRedemption.GetAccountRedemption(AccountCode);
+        }
+
+        /// <summary>
+        /// Occasionally, you may want to remove a coupon from an account.
+        /// </summary>
+        public void RemoveCouponRedemption()
+        {
+            var redemption = RecurlyCouponRedemption.GetAccountRedemption(AccountCode);
+            redemption.Remove();
+        }
+
+        /// <summary>
+        /// Returns a list of transactions for an account.
+        /// </summary>
+        /// <param name="state">The state of transactions to return</param>
+        /// <param name="type">The type of transactions to return</param>
+        /// <param name="pageSize">Number of records to return per page</param>
+        /// <returns></returns>
+        public RecurlyTransactionList ListTransactions(RecurlyTransaction.TransactionState state =
+                                                           RecurlyTransaction.TransactionState.All,
+                                                       RecurlyTransaction.TransactionType type =
+                                                           RecurlyTransaction.TransactionType.All,
+                                                       int pageSize = RecurlyPager.DefaultPageSize)
+        {
+            return RecurlyTransactionList.ListAccountTransactions(AccountCode, state, type, pageSize);
         }
 
         #region Read and Write XML documents
 
-        internal void ReadXml(XmlTextReader reader)
+        private void ReadXml(XmlTextReader reader)
         {
             while (reader.Read())
             {
                 // End of account element, get out of here
-                if (reader.Name == "account" && reader.NodeType == XmlNodeType.EndElement)
+                if (reader.Name == ElementName && reader.NodeType == XmlNodeType.EndElement)
                     break;
 
-                if (reader.NodeType == XmlNodeType.Element)
+                if(reader.NodeType != XmlNodeType.Element) continue;
+                switch (reader.Name)
                 {
-                    switch (reader.Name)
-                    {
-                        case "account_code":
-                            this.AccountCode = reader.ReadElementContentAsString();
-                            break;
+                    case AccountCodeElement:
+                        AccountCode = reader.ReadElementContentAsString();
+                        break;
 
-                        case "username":
-                            this.Username = reader.ReadElementContentAsString();
-                            break;
+                    case StateElement:
+                        State = reader.ReadElementContentAsEnum<AccountState>();
+                        break;
 
-                        case "first_name":
-                            this.FirstName = reader.ReadElementContentAsString();
-                            break;
+                    case UsernameElement:
+                        Username = reader.ReadElementContentAsString();
+                        break;
 
-                        case "last_name":
-                            this.LastName = reader.ReadElementContentAsString();
-                            break;
+                    case FirstNameElement:
+                        FirstName = reader.ReadElementContentAsString();
+                        break;
 
-                        case "email":
-                            this.Email = reader.ReadElementContentAsString();
-                            break;
+                    case LastNameElement:
+                        LastName = reader.ReadElementContentAsString();
+                        break;
 
-                        case "company_name":
-                            this.CompanyName = reader.ReadElementContentAsString();
-                            break;
+                    case EmailElement:
+                        Email = reader.ReadElementContentAsString();
+                        break;
 
-                        case "accept_language":
-                            this.AcceptLanguage = reader.ReadElementContentAsString();
-                            break;
+                    case CompanyNameElement:
+                        CompanyName = reader.ReadElementContentAsString();
+                        break;
 
-                        case "hosted_login_token":
-                            this.HostedLoginToken = reader.ReadElementContentAsString();
-                            break;
-                    }
+                    case AcceptLanguageElement:
+                        AcceptLanguage = reader.ReadElementContentAsString();
+                        break;
+
+                    case HostedLoginTokenElement:
+                        HostedLoginToken = reader.ReadElementContentAsString();
+                        break;
+
+                    case CreatedAtElement:
+                        CreatedAt = reader.ReadElementContentAsDateTime();
+                        break;
+
+                    case RecurlyAddress.ElementName:
+                        Address = new RecurlyAddress(reader);
+                        break;
                 }
             }
         }
 
-        internal void WriteXml(XmlTextWriter xmlWriter)
+        internal void WriteXml(XmlTextWriter xmlWriter, bool includeAccountCode = true)
         {
-            xmlWriter.WriteStartElement("account"); // Start: account
-
-            xmlWriter.WriteElementString("account_code", this.AccountCode);
-            xmlWriter.WriteElementString("username", this.Username);
-            xmlWriter.WriteElementString("email", this.Email);
-            xmlWriter.WriteElementString("first_name", this.FirstName);
-            xmlWriter.WriteElementString("last_name", this.LastName);
-            xmlWriter.WriteElementString("company_name", this.CompanyName);
-            xmlWriter.WriteElementString("accept_language", this.AcceptLanguage);
-
-            if (this.BillingInfo != null)
-                this.BillingInfo.WriteXml(xmlWriter);
-
+            xmlWriter.WriteStartElement(ElementName);
+                if (includeAccountCode)    
+                    xmlWriter.WriteElementString(AccountCodeElement, AccountCode);
+                xmlWriter.WriteElementStringIfProvided(UsernameElement, Username);
+                xmlWriter.WriteElementString(EmailElement, Email);
+                xmlWriter.WriteElementString(FirstNameElement, FirstName);
+                xmlWriter.WriteElementString(LastNameElement, LastName);
+                xmlWriter.WriteElementStringIfProvided(CompanyNameElement, CompanyName);
+                xmlWriter.WriteElementStringIfProvided(AcceptLanguageElement, AcceptLanguage);
+                if (_billingInfo != null)
+                    _billingInfo.WriteXml(xmlWriter);
+                if (Address != null)
+                    Address.WriteXml(xmlWriter);
             xmlWriter.WriteEndElement(); // End: account
         }
 
@@ -190,27 +310,75 @@ namespace Recurly
 
         public override string ToString()
         {
-            return "Recurly Account: " + this.AccountCode;
+            return "Recurly Account: " + AccountCode;
         }
 
         public override bool Equals(object obj)
         {
-            if (obj is RecurlyAccount)
-                return Equals((RecurlyAccount)obj);
-            else
-                return false;
+            var a = obj as RecurlyAccount;
+            return a != null && Equals(a);
         }
 
         public bool Equals(RecurlyAccount account)
         {
-            return this.AccountCode == account.AccountCode;
+            return AccountCode == account.AccountCode;
         }
 
         public override int GetHashCode()
         {
-            return this.AccountCode.GetHashCode();
+            return AccountCode.GetHashCode();
         }
 
         #endregion
     }
 }
+
+
+        //public static RecurlyCouponRedemption CouponRedemption(string accountCode)
+        //{
+        //    var redemption = new RecurlyCouponRedemption()
+        //        {
+        //            AccountCode = accountCode
+        //        };
+        //    var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Get,
+        //                                 UrlPrefix + System.Web.HttpUtility.UrlEncode(accountCode) + "/redemption",
+        //                                 redemption.ReadXml);
+
+        //    return statusCode == HttpStatusCode.NotFound ? null : redemption;
+        //}
+
+        //public static void RemoveCouponRedemption(string accountCode)
+        //{
+        //    RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
+        //                                 UrlPrefix + System.Web.HttpUtility.UrlEncode(accountCode) + "/redemption");
+        //}
+
+        ///// <summary>
+        ///// Lookup the active coupon for this account.
+        ///// </summary>
+        ///// <returns></returns>
+        //public RecurlyCouponRedemption GetActiveCoupon()
+        //{
+        //    return CouponRedemption(AccountCode);
+        //}
+
+        ///// <summary>
+        ///// Redeem a coupon on the account.
+        ///// </summary>
+        ///// <param name="couponCode"></param>
+        ///// <param name="currency"></param>
+        ///// <returns></returns>
+        //public RecurlyCouponRedemption RedeemCoupon(string couponCode, string currency = "USD")
+        //{
+        //    return RecurlyCoupon.Redeem(couponCode, AccountCode, currency);
+        //}
+
+        //public static RecurlyInvoiceList GetInvoices(string accountCode)
+        //{
+            
+        //}
+
+        //public RecurlyInvoiceList Invoices()
+        //{
+            
+        //}

@@ -1,55 +1,70 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Web;
 using System.Xml;
 using System.Text;
+using Recurly.Properties;
 
 namespace Recurly
 {
-    public class RecurlyInvoiceList : List<RecurlyInvoice>
+    public class RecurlyInvoiceList : IRecurlyPagedList<RecurlyInvoice>
     {
-        internal RecurlyInvoiceList()
-        { }
-
-        private const string UrlPostfix = "/invoices";
-
-        public static RecurlyInvoice[] GetInvoices(string accountCode, int pageNumber = 1)
+        private class RecurlyInvoiceListPager : RecurlyPager<RecurlyInvoice>
         {
-            RecurlyInvoiceList invoiceList = new RecurlyInvoiceList();
+            private readonly string _basePath;
 
-            HttpStatusCode statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Get,
-                AccountInvoicesUrl(accountCode, pageNumber),
-                new RecurlyClient.ReadXmlDelegate(invoiceList.ReadXml));
-
-            if (statusCode == HttpStatusCode.NotFound)
-                return null;
-
-            return invoiceList.ToArray();
-        }
-
-        private static string AccountInvoicesUrl(string accountCode, int pageNumber)
-        {
-            return RecurlyAccount.UrlPrefix + System.Web.HttpUtility.UrlEncode(accountCode) + UrlPostfix + "?page=" + pageNumber;
-        }
-
-        internal void ReadXml(XmlTextReader reader)
-        {
-            while (reader.Read())
+            public RecurlyInvoiceListPager(string basePath, RecurlyInvoice.InvoiceState state, int pageSize) : base(pageSize)
             {
-                // End of invoices element, get out of here
-                if (reader.Name == "invoices" && reader.NodeType == XmlNodeType.EndElement)
-                    break;
+                _basePath = basePath;
+                if (state != RecurlyInvoice.InvoiceState.All)
+                    CustomQueryParameters.Add("state",Enum.GetName(state.GetType(),state).ToLower());
+            }
 
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "invoice":
-                            this.Add(new RecurlyInvoice(reader));
-                            break;
-                    }
-                }
+            protected override string BasePath
+            {
+                get { return _basePath; }
+            }
+
+            protected override string ParentElementName
+            {
+                get { return "invoices"; }
+            }
+
+            protected override string ChildElementName
+            {
+                get { return RecurlyInvoice.ElementName; }
+            }
+
+            protected override RecurlyInvoice ReadChildXml(XmlTextReader reader)
+            {
+                return new RecurlyInvoice(reader);                
             }
         }
+
+        private readonly RecurlyInvoiceListPager _pager;
+
+        internal RecurlyInvoiceList(string basePath, RecurlyInvoice.InvoiceState state, int pageSize)
+        {
+            _pager = new RecurlyInvoiceListPager(basePath, state, pageSize);
+        }
+
+        public static RecurlyInvoiceList ListInvoices(RecurlyInvoice.InvoiceState state = RecurlyInvoice.InvoiceState.All, int pageSize = RecurlyPager.DefaultPageSize)
+        {
+            return new RecurlyInvoiceList(Settings.Default.PathInvoicesList,state,pageSize);
+        }
+
+        public static RecurlyInvoiceList ListAccountInvoices(string accountCode, RecurlyInvoice.InvoiceState state = RecurlyInvoice.InvoiceState.All, int pageSize = RecurlyPager.DefaultPageSize)
+        {
+            return new RecurlyInvoiceList(String.Format(Settings.Default.PathAccountInvoicesList, accountCode.UrlEncode()),
+                                              state, pageSize);
+        }
+
+        public List<RecurlyInvoice> NextPage()
+        {
+            return _pager.Next();
+        }
+
+        public bool EndOfPages { get { return _pager.EndOfPages; }}
     }
 }

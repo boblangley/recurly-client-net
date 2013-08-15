@@ -1,61 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text;
+using System.Web;
 using System.Xml;
+using Recurly.Properties;
 
 namespace Recurly
 {
-    public class RecurlyBillingInfo
+    public class RecurlyBillingInfo : RecurlyAddress
     {
-        /// <summary>
-        /// Account Code or unique ID for the account in Recurly
-        /// </summary>
+        internal new const string ElementName = "billing_info";
+        
+        private const string AccountCodeElement = "account";
         public string AccountCode { get; private set; }
+        private const string FirstNameElement = "first_name";
         public string FirstName { get; set; }
+        private const string LastNameElement = "last_name";
         public string LastName { get; set; }
-        public string Address1 { get; set; }
-        public string Address2 { get; set; }
-        public string City { get; set; }
-        /// <summary>
-        /// 2-letter state or province preferred
-        /// </summary>
-        public string State { get; set; }
-        /// <summary>
-        /// Zip code or Postal code
-        /// </summary>
-        public string PostalCode { get; set; }
-        /// <summary>
-        /// 2-letter ISO country code
-        /// </summary>
-        public string Country { get; set; }
-        public string IpAddress { get; set; }
-        public string PhoneNumber { get; set; }
-        public RecurlyCreditCard CreditCard { get; private set; }
-
-        /// <summary>
-        /// VAT Numbers
-        /// </summary>
+        private const string VatNumberElement = "vat_number";
         public string VatNumber { get; set; }
+        private const string IpAddressElement = "ip_address";
+        public string IpAddress { get; set; }
+        private const string IpAddressCountryElement = "ip_address_country";
+        public string IpAddressCountry { get; private set; }
 
-        private const string UrlPrefix = "/accounts/";
-        private const string UrlPostfix = "/billing_info";
-
-        public RecurlyBillingInfo(string accountCode) : this()
+        public virtual string Type
         {
-            this.AccountCode = accountCode;
+            get { return "undefined"; }
         }
 
-        public RecurlyBillingInfo(RecurlyAccount account) : this()
+        protected RecurlyBillingInfo(string accountCode)
         {
-            this.AccountCode = account.AccountCode;
+            AccountCode = accountCode;
         }
-
-        private RecurlyBillingInfo()
-        {
-            this.CreditCard = new RecurlyCreditCard();
-        }
-
+        
         /// <summary>
         /// Lookup a Recurly account's billing info
         /// </summary>
@@ -63,147 +43,106 @@ namespace Recurly
         /// <returns></returns>
         public static RecurlyBillingInfo Get(string accountCode)
         {
-            RecurlyBillingInfo billingInfo = new RecurlyBillingInfo();
+            var billingInfo = new RecurlyBillingInfo(accountCode);
 
-            HttpStatusCode statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Get,
-                BillingInfoUrl(accountCode), 
-                new RecurlyClient.ReadXmlDelegate(billingInfo.ReadXml));
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Get,
+                String.Format(Settings.Default.PathAccountBillingInfoGet,HttpUtility.UrlEncode(accountCode)), 
+                reader =>
+                    {
+                        reader.Read();
+                        switch(reader.GetAttribute("type"))
+                        {
+                            case "credit_card":
+                                billingInfo = new RecurlyCreditCardBillingInfo(accountCode);
+                                break;
+                            case "paypal":
+                                billingInfo = new RecurlyPayPalBillingInfo(accountCode);
+                                break;
+                        }
+                        billingInfo.ReadXml(reader);
+                    });
 
-            if (statusCode == HttpStatusCode.NotFound)
-                return null;
-
-            return billingInfo;
+            return statusCode == HttpStatusCode.OK ? billingInfo : null;
         }
 
         /// <summary>
-        /// Update an account's billing info in Recurly
-        /// </summary>
-        public void Create()
-        {
-            Update();
-        }
-
-        /// <summary>
-        /// Update an account's billing info in Recurly
+        /// Updates the BillingInfo for the account
         /// </summary>
         public void Update()
         {
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put, 
-                BillingInfoUrl(this.AccountCode), 
-                new RecurlyClient.WriteXmlDelegate(this.WriteXml));
+            var account = RecurlyAccount.Get(AccountCode);
+            account.Update(this);
         }
 
         /// <summary>
         /// Delete an account's billing info.
         /// </summary>
-        public void ClearBillingInfo()
+        public static void DeleteBillingInfo(string accountCode)
         {
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete, 
-                BillingInfoUrl(this.AccountCode));
-        }
-
-        private static string BillingInfoUrl(string accountCode)
-        {
-            return UrlPrefix + System.Web.HttpUtility.UrlEncode(accountCode) + UrlPostfix;
+            var account = RecurlyAccount.Get(accountCode);
+            account.Update();
         }
 
         internal void ReadXml(XmlTextReader reader)
         {
             while (reader.Read())
             {
-                // End of billing_info element, get out of here
-                if (reader.Name == "billing_info" && reader.NodeType == XmlNodeType.EndElement)
+                if (reader.Name == ElementName && reader.NodeType == XmlNodeType.EndElement)
                     break;
 
-                if (reader.NodeType == XmlNodeType.Element)
+                if(reader.NodeType != XmlNodeType.Element) continue;
+                switch (reader.Name)
                 {
-                    switch (reader.Name)
-                    {
-                        case "account_code":
-                            this.AccountCode = reader.ReadElementContentAsString();
-                            break;
+                    case AccountCodeElement:
+                        AccountCode = reader.ReadElementAttribute("href").Split('/').Last();
+                        break;
 
-                        case "first_name":
-                            this.FirstName = reader.ReadElementContentAsString();
-                            break;
+                    case FirstNameElement:
+                        FirstName = reader.ReadElementContentAsString();
+                        break;
 
-                        case "last_name":
-                            this.LastName = reader.ReadElementContentAsString();
-                            break;
+                    case LastNameElement:
+                        LastName = reader.ReadElementContentAsString();
+                        break;
 
-                        case "address1":
-                            this.Address1 = reader.ReadElementContentAsString();
-                            break;
-                            
-                        case "address2":
-                            this.Address2 = reader.ReadElementContentAsString();
-                            break;
+                    case VatNumberElement:
+                        VatNumber = reader.ReadElementContentAsString();
+                        break;
 
-                        case "city":
-                            this.City = reader.ReadElementContentAsString();
-                            break;
+                    case IpAddressElement:
+                        IpAddress = reader.ReadElementContentAsString();
+                        break;
 
-                        case "state":
-                            this.State = reader.ReadElementContentAsString();
-                            break;
-
-                        case "zip":
-                            this.PostalCode = reader.ReadElementContentAsString();
-                            break;
-
-                        case "country":
-                            this.Country = reader.ReadElementContentAsString();
-                            break;
-
-                        case "ip_address":
-                            this.IpAddress = reader.ReadElementContentAsString();
-                            break;
-
-                        case "phone":
-                            this.PhoneNumber = reader.ReadElementContentAsString();
-                            break;
-
-                        case "vat_number":
-                            this.VatNumber = reader.ReadElementContentAsString();
-                            break;
-
-                        case "credit_card":
-                            this.CreditCard = new RecurlyCreditCard();
-                            this.CreditCard.ReadXml(reader);
-                            break;
-                    }
+                    case IpAddressCountryElement:
+                        IpAddressCountry = reader.ReadElementContentAsString();
+                        break;
                 }
+                ReadAddressElements(reader);
+                ReadExtendedElements(reader);
             }
         }
 
-        internal void WriteXml(XmlTextWriter xmlWriter)
+        protected virtual void ReadExtendedElements(XmlTextReader reader)
         {
-            xmlWriter.WriteStartElement("billing_info"); // Start: billing_info
+        }
 
-            xmlWriter.WriteElementString("account_code", this.AccountCode);
-            xmlWriter.WriteElementString("first_name", this.FirstName);
-            xmlWriter.WriteElementString("last_name", this.LastName);
-            xmlWriter.WriteElementString("address1", this.Address1);
-            xmlWriter.WriteElementString("address2", this.Address2);
-            xmlWriter.WriteElementString("city", this.City);
-            xmlWriter.WriteElementString("state", this.State);
-            xmlWriter.WriteElementString("zip", this.PostalCode);
-            xmlWriter.WriteElementString("country", this.Country);
-            xmlWriter.WriteElementString("phone", this.PhoneNumber);
-
-
-            if (!String.IsNullOrEmpty(this.IpAddress))
-                xmlWriter.WriteElementString("ip_address", this.IpAddress);
-            else
+        internal new void WriteXml(XmlTextWriter writer)
+        {
+            if (String.IsNullOrEmpty(IpAddress))
                 System.Diagnostics.Debug.WriteLine("Recurly Client Library: Recording IP Address is strongly recommended.");
 
-            if (!String.IsNullOrEmpty(this.VatNumber))
-                xmlWriter.WriteElementString("vat_number", this.VatNumber);
+            writer.WriteStartElement(ElementName);
+                writer.WriteElementString(FirstNameElement, FirstName);
+                writer.WriteElementString(LastNameElement, LastName);
+                WriteAddressElements(writer);
+                writer.WriteElementStringIfProvided(VatNumberElement,VatNumber);
+                writer.WriteElementStringIfProvided(IpAddressElement, IpAddress);
+                WriteExtendedElements(writer);
+            writer.WriteEndElement();
+        }
 
-            if (this.CreditCard != null)
-                this.CreditCard.WriteXml(xmlWriter);
-
-            xmlWriter.WriteEndElement(); // End: billing_info
+        protected virtual void WriteExtendedElements(XmlTextWriter writer)
+        {
         }
     }
 }

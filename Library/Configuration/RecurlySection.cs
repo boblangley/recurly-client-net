@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Configuration;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Recurly.Configuration
 {
@@ -49,29 +47,11 @@ namespace Recurly.Configuration
             set { base["subdomain"] = value; }
         }
 
-        /// <summary>
-        /// Recurly account type
-        /// </summary>
-        public enum EnvironmentType
+        [ConfigurationProperty("currency", DefaultValue = "USD", IsRequired = false)]
+        public string Currency
         {
-            /// <summary>
-            /// Production or sandbox Recurly accounts
-            /// </summary>
-            Production,
-            /// <summary>
-            /// Local development by Recurly developers
-            /// </summary>
-            Development
-        }
-
-        /// <summary>
-        /// Recurly environment. Use "Production" unless you work for Recurly.
-        /// </summary>
-        [ConfigurationProperty("environment", DefaultValue=EnvironmentType.Production, IsRequired=false)]
-        public EnvironmentType Environment
-        {
-            get { return (EnvironmentType)base["environment"]; }
-            set { base["environment"] = value; }
+            get { return (string) base["currency"]; }
+            set { base["currency"] = value; }
         }
 
         #endregion
