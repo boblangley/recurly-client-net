@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Xml;
+using System.Xml.Linq;
 using Recurly.Core;
 using Recurly.Properties;
 
@@ -37,9 +38,9 @@ namespace Recurly
                 get { return RecurlyAdjustment.ElementName; }
             }
 
-            protected override RecurlyAdjustment ReadChildXml(XmlTextReader reader)
+            protected override RecurlyAdjustment InitialzeChild(XElement element)
             {
-                return new RecurlyAdjustment(reader);
+                return new RecurlyAdjustment(element);
             }
         }
 

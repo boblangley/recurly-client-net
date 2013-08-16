@@ -87,9 +87,9 @@ namespace Recurly
             DiscountInCents = new RecurlyInCentsMapping(DiscountInCentsElement);
         }
 
-        internal RecurlyCoupon(XmlTextReader xmlReader) : this()
+        internal RecurlyCoupon(XElement element) : this()
         {
-            ReadXml(xmlReader);
+            ReadElement(element);
         }
 
         #endregion
@@ -167,81 +167,64 @@ namespace Recurly
 
         #region Read and Write XML documents
 
-        protected override string RootElementName
+        protected override void ReadElement(XElement element)
         {
-            get { return ElementName; }
-        }
+            element.ProcessChild(CouponCodeElement, e =>
+                CouponCode = e.Value);
 
-        protected override void ProcessElement(XElement element)
-        {
-            switch (element.Name.LocalName)
-            {
-                case CouponCodeElement:
-                    CouponCode = element.Value;
-                    break;
+            element.ProcessChild(NameElement, e =>
+                Name = e.Value);
 
-                case NameElement:
-                    Name = element.Value;
-                    break;
 
-                case StateElement:
-                    State = element.ToEnum<CouponState>();
-                    break;
+            element.ProcessChild(StateElement, e =>
+                State = e.ToEnum<CouponState>());
 
-                case HostedDescriptionElement:
-                    HostedDescription = element.Value;
-                    break;
 
-                case InvoiceDescriptionElement:
-                    InvoiceDescription = element.Value;
-                    break;
+            element.ProcessChild(HostedDescriptionElement, e =>
+                HostedDescription = e.Value);
 
-                case DiscountTypeElement:
-                    Type = element.ToEnum<DiscountType>();
-                    break;
 
-                case DiscountPercentElement:
-                    DiscountPercent = element.ToInt();
-                    break;
+            element.ProcessChild(InvoiceDescriptionElement, e =>
+                InvoiceDescription = e.Value);
 
-                case RedeemByDateElement:
-                    RedeemByDate = element.ToNullable(DateTime.Parse);
-                    break;
 
-                case SingleUseElement:
-                    SingleUse = element.ToBool();
-                    break;
+            element.ProcessChild(DiscountTypeElement, e =>
+                Type = e.ToEnum<DiscountType>());
 
-                case AppliesForMonthsElement:
-                    AppliesForMonths = element.ToNullable(int.Parse);
-                    break;
 
-                case MaxRedemptionsElement:
-                    MaxRedemptions = element.ToInt();
-                    break;
+            element.ProcessChild(DiscountPercentElement, e =>
+                DiscountPercent = e.ToInt());
 
-                case AppliesToAllPlansElement:
-                    AppliesToAllPlans = element.ToBool();
-                    break;
 
-                case CreatedAtElement:
-                    CreatedAt = element.ToDateTime();
-                    break;
+            element.ProcessChild(RedeemByDateElement, e =>
+                RedeemByDate = e.ToNullable(DateTime.Parse));
 
-                case PlanCodeItemElement:
-                    PlanCodes.Add(element.Value);
-                    break;
-            }
-        }
 
-        protected override void ProcessReader(string elementName, XmlTextReader reader)
-        {
-            switch(elementName)
-            {
-                case DiscountInCentsElement:
-                    DiscountInCents.ReadXml(reader);
-                    break;
-            }
+            element.ProcessChild(SingleUseElement, e =>
+                SingleUse = e.ToBool());
+
+
+            element.ProcessChild(AppliesForMonthsElement, e =>
+                AppliesForMonths = e.ToNullable(int.Parse));
+
+
+            element.ProcessChild(MaxRedemptionsElement, e =>
+                MaxRedemptions = e.ToInt());
+
+
+            element.ProcessChild(AppliesToAllPlansElement, e =>
+                AppliesToAllPlans = e.ToBool());
+
+
+            element.ProcessChild(CreatedAtElement, e =>
+                CreatedAt = e.ToDateTime());
+
+
+            element.ProcessChild(PlanCodeItemElement, e =>
+                PlanCodes.Add(element.Value));
+
+            element.ProcessChild(DiscountInCentsElement, e => 
+                DiscountInCents.ReadElement(e));
         }
 
         internal void WriteXml(XmlTextWriter writer)

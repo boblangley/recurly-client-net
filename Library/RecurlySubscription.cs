@@ -17,13 +17,6 @@ namespace Recurly
     {
         internal static string ElementName = "subscription";
 
-        private string _elementName = ElementName;
-
-        protected override string RootElementName
-        {
-            get { return _elementName; }
-        }
-
         /// <summary>
         /// The state of subscription
         /// </summary>
@@ -160,9 +153,9 @@ namespace Recurly
             Quantity = 1;
         }
 
-        internal RecurlySubscription(XmlTextReader reader) : this()
+        internal RecurlySubscription(XElement element) : this()
         {
-            ReadXml(reader);
+            ReadElement(element);
         }
 
         /// <summary>
@@ -281,91 +274,65 @@ namespace Recurly
 
         #region Read and Write XML documents
 
-        protected override void PreLoopInitializion()
+        protected override void PreReadInitialization()
         {
             Addons.Clear();
         }
 
-        protected override void ProcessElement(XElement element)
+        protected override void ReadElement(XElement element)
         {
-            switch(element.Name.LocalName)
-            {
-                case AccountCodeElement:
-                    AccountCode = element.Attribute("href").Value.Split('/').Last();
-                    break;
+            element.ProcessChild(AccountCodeElement, e =>
+                AccountCode = e.GetHrefLinkId());
 
-                case PlanCodeElement:
-                    PlanCode = element.Value;
-                    break;
+            element.ProcessChild(PlanCodeElement, e =>
+                PlanCode = e.Value);
 
-                case IdElement:
-                    Id = element.Value;
-                    break;
+            element.ProcessChild(IdElement, e =>
+                Id = e.Value);
 
-                case StateElement:
-                    State = element.ToEnum<SubscriptionState>();
-                    break;
+            element.ProcessChild(StateElement, e =>
+                State = e.ToEnum<SubscriptionState>());
 
-                case UnitAmountInCentsElement:
-                    UnitAmountInCents = element.ToInt();
-                    break;
+            element.ProcessChild(UnitAmountInCentsElement, e =>
+                UnitAmountInCents = e.ToInt());
 
-                case CurrencyElement:
-                    Currency = element.Value;
-                    break;
+            element.ProcessChild(CurrencyElement, e =>
+                Currency = e.Value);
 
-                case QuantityElement:
-                    Quantity = element.ToInt();
-                    break;
+            element.ProcessChild(QuantityElement, e =>
+                Quantity = e.ToInt());
 
-                case ActivatedAtElement:
-                    ActivatedAt = element.ToDateTime();
-                    break;
+            element.ProcessChild(ActivatedAtElement, e =>
+                ActivatedAt = e.ToDateTime());
+            
+            element.ProcessChild(CanceledAtElement, e =>
+                CanceledAt = e.ToNullable(DateTime.Parse));
 
-                case CanceledAtElement:
-                    CanceledAt = element.ToNullable(DateTime.Parse);
-                    break;
+            element.ProcessChild(ExpiresAtElement, e =>
+                ExpiresAt = e.ToNullable(DateTime.Parse));
 
-                case ExpiresAtElement:
-                    ExpiresAt = element.ToNullable(DateTime.Parse);
-                    break;
+            element.ProcessChild(CurrentPeriodStartedAtElement, e =>
+                CurrentPeriodStartedAt = e.ToNullable(DateTime.Parse));
 
-                case CurrentPeriodStartedAtElement:
-                    CurrentPeriodStartedAt = element.ToNullable(DateTime.Parse);
-                    break;
+            element.ProcessChild(CurrentPeriodEndsAtElement, e =>
+                CurrentPeriodEndsAt = e.ToNullable(DateTime.Parse));
 
-                case CurrentPeriodEndsAtElement:
-                    CurrentPeriodEndsAt = element.ToNullable(DateTime.Parse);
-                    break;
+            element.ProcessChild(TrialStartedAtElement, e =>
+                TrialStartedAt = e.ToNullable(DateTime.Parse));
 
-                case TrialStartedAtElement:
-                    TrialStartedAt = element.ToNullable(DateTime.Parse);
-                    break;
+            element.ProcessChild(TrialEndsAtElement, e =>
+                _trialEndsAt = e.ToNullable(DateTime.Parse));
 
-                case TrialEndsAtElement:
-                    _trialEndsAt = element.ToNullable(DateTime.Parse);
-                    break;
+            element.ProcessChild(CollectionMethodElement, e =>
+                CollectionMethod = e.ToEnum<CollectionMethods>());
+            
+            element.ProcessChild(RecurlySubscriptionAddon.ElementName, e =>
+                Addons.Add(new RecurlySubscriptionAddon(e)));
 
-                case CollectionMethodElement:
-                    CollectionMethod = element.ToEnum<CollectionMethods>();
-                    break;
-            }
+            element.ProcessChild(PendingSubscriptionElement, e =>
+                PendingSubscription = new RecurlySubscription(e));
+
             RecurlyManualInvoiceDetails.ProcessElement(element, this);
-        }
-
-        protected override void ProcessReader(string elementName, XmlTextReader reader)
-        {
- 	        switch(elementName)
- 	        {
-                case RecurlySubscriptionAddon.ElementName:
-                    Addons.Add(new RecurlySubscriptionAddon(reader));
-                    break;
-
-                case PendingSubscriptionElement:
-                    PendingSubscription = new RecurlySubscription {_elementName = PendingSubscriptionElement};
- 	                PendingSubscription.ReadXml(reader);
-                    break;
- 	        }            
         }
 
         protected void WriteCreateXml(XmlTextWriter writer, RecurlyAccount account, string couponCode, int? billingCycles, DateTime? firstRenewalDate)

@@ -33,6 +33,11 @@ namespace Recurly
         {
         }
 
+        internal RecurlyCouponRedemption(XElement element)
+        {
+            ReadElement(element);
+        }
+
         public static RecurlyCouponRedemption GetAccountRedemption(string accountNumber)
         {
             var redemption = new RecurlyCouponRedemption();
@@ -66,34 +71,25 @@ namespace Recurly
             return statusCode == HttpStatusCode.OK ? redemption : null;
         }
 
-        protected override string RootElementName
+        protected override void ReadElement(XElement element)
         {
-            get { return ElementName; }
-        }
+            element.ProcessChild(SingleUseElement, e =>
+                SingleUse = e.ToBool());
 
-        protected override void ProcessElement(XElement element)
-        {
-            switch (element.Name.LocalName)
-            {
-                case SingleUseElement:
-                    SingleUse = element.ToBool();
-                    break;
-                case TotalDiscountedInCentsElement:
-                    TotalDiscountedInCents = element.ToInt();
-                    break;
-                case CreatedAtElement:
-                    CreatedAt = element.ToDateTime();
-                    break;
-                case CouponCodeElement:
-                    CouponCode = element.GetHrefLinkId();
-                    break;
-                case AccountLinkElement:
-                    AccountCode = element.GetHrefLinkId();
-                    break;
-                case StateElement:
-                    State = element.Value;
-                    break;
-            }
+            element.ProcessChild(TotalDiscountedInCentsElement, e =>
+                TotalDiscountedInCents = e.ToInt());
+
+            element.ProcessChild(CreatedAtElement, e =>
+                CreatedAt = e.ToDateTime());
+
+            element.ProcessChild(CouponCodeElement, e =>
+                CouponCode = e.GetHrefLinkId());
+
+            element.ProcessChild(AccountLinkElement, e =>
+                AccountCode = e.GetHrefLinkId());
+
+            element.ProcessChild(StateElement, e =>
+                State = e.Value);
         }
 
         internal void WriteXml(XmlTextWriter writer)

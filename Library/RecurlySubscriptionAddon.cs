@@ -22,9 +22,9 @@ namespace Recurly
             
         }
 
-        internal RecurlySubscriptionAddon(XmlTextReader reader)
+        internal RecurlySubscriptionAddon(XElement element)
         {
-            
+            ReadElement(element);
         }
 
         public static RecurlySubscriptionAddon Initialize(string addonCode, int unitAmountInCents, int quantity = 1)
@@ -55,27 +55,16 @@ namespace Recurly
                 Quantity = quantity;
         }
 
-        protected override string RootElementName
+        protected override void ReadElement(XElement element)
         {
-            get { return ElementName; }
-        }
+            element.ProcessChild(AddonCodeElement, e =>
+                AddonCode = e.Value);
 
-        protected override void ProcessElement(XElement element)
-        {
-            switch (element.Name.LocalName)
-            {
-                case AddonCodeElement:
-                    AddonCode = element.Value;
-                    break;
+            element.ProcessChild(UnitAmountInCentsElement, e =>
+                UnitAmountInCents = e.ToInt());
 
-                case UnitAmountInCentsElement:
-                    UnitAmountInCents = element.ToInt();
-                    break;
-
-                case QuantityElement:
-                    Quantity = element.ToInt();
-                    break;
-            }
+            element.ProcessChild(QuantityElement, e =>
+                Quantity = e.ToInt());
         }
 
         internal void WriteXml(XmlTextWriter writer)

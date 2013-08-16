@@ -52,9 +52,9 @@ namespace Recurly
             Transactions = new List<RecurlyTransaction>();
         }
 
-        internal RecurlyInvoice(XmlTextReader reader) : this()
+        internal RecurlyInvoice(XElement element) : this()
         {
-            ReadXml(reader);
+            ReadElement(element);
         }
 
         /// <summary>
@@ -113,63 +113,52 @@ namespace Recurly
 
         #region Read and Write XML documents
 
-        protected override string RootElementName
+        protected override void ReadElement(XElement element)
         {
-            get { return ElementName; }
+            element.ProcessChild(IdElement, e =>
+                Id = e.Value);
+
+            element.ProcessChild(StateElement, e =>
+                State = e.ToEnum<InvoiceState>());
+
+            element.ProcessChild(InvoiceNumberElement, e =>
+                InvoiceNumber = e.ToInt());
+
+            element.ProcessChild(PurchaseOrderNumberElement, e =>
+                PurchaseOrderNumber = e.Value);
+
+            element.ProcessChild(VatNumberElement, e =>
+                VatNumber = e.Value);
+
+            element.ProcessChild(SubTotalInCentsElement, e =>
+                SubTotalInCents = e.ToInt());
+
+            element.ProcessChild(TaxInCentsElement, e =>
+                TaxInCents = e.ToInt());
+
+            element.ProcessChild(TotalInCentsElement, e =>
+                TotalInCents = e.ToInt());
+
+            element.ProcessChild(CurrencyElement, e =>
+                Currency = e.Value);
+
+            element.ProcessChild(CreatedAtElement, e =>
+                CreatedAt = e.ToDateTime());
+
+            element.ProcessChild(AccountCodeElement, e =>
+                AccountCode = e.Value.Split('/').Last());
+
+            element.ProcessChild(TransactionsElement, ProcessTransactions);
         }
 
-        protected override void ProcessElement(XElement element)
+        private void ProcessTransactions(XElement element)
         {
-            switch (element.Name.LocalName)
-            {
-                case IdElement:
-                    Id = element.Value;
-                    break;
+            element.Elements("transaction").ToList().ForEach(ProcessTransaction);
+        }
 
-                case StateElement:
-                    State = element.ToEnum<InvoiceState>();
-                    break;
-
-                case InvoiceNumberElement:
-                    InvoiceNumber = element.ToInt();
-                    break;
-
-                case PurchaseOrderNumberElement:
-                    PurchaseOrderNumber = element.Value;
-                    break;
-
-                case VatNumberElement:
-                    VatNumber = element.Value;
-                    break;
-
-                case SubTotalInCentsElement:
-                    SubTotalInCents = element.ToInt();
-                    break;
-
-                case TaxInCentsElement:
-                    TaxInCents = element.ToInt();
-                    break;
-
-                case TotalInCentsElement:
-                    TotalInCents = element.ToInt();
-                    break;
-
-                case CurrencyElement:
-                    Currency = element.Value;
-                    break;
-
-                case CreatedAtElement:
-                    CreatedAt = element.ToDateTime();
-                    break;
-
-                case AccountCodeElement:
-                    AccountCode = element.Value.Split('/').Last();
-                    break;
-
-                case TransactionsElement:
-                    //Transactions.ReadXml(reader); 
-                    break;
-            }
+        private void ProcessTransaction(XElement element)
+        {
+            Transactions.Add(new RecurlyTransaction(element));
         }
 
         #endregion

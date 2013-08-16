@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
+using System.Xml.Linq;
 using Recurly.Core;
 using Recurly.Properties;
 
@@ -35,9 +36,9 @@ namespace Recurly
                 get { return RecurlyAccount.ElementName; }
             }
 
-            protected override RecurlyAccount ReadChildXml(XmlTextReader reader)
+            protected override RecurlyAccount InitialzeChild(XElement element)
             {
-                return new RecurlyAccount(reader);
+                return new RecurlyAccount(element);
             }
         }
 
@@ -48,6 +49,12 @@ namespace Recurly
             _pager = new RecurlyAccountListPager(state, pageSize);
         }
 
+        /// <summary>
+        /// Returns a list of the accounts on your site.
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="pageSize"></param>
+        /// <returns></returns>
         public RecurlyAccountList ListAccounts(RecurlyAccount.AccountState state = RecurlyAccount.AccountState.Active,
                                                int pageSize = RecurlyPager.DefaultPageSize)
         {

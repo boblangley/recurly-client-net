@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Xml;
+using System.Xml.Linq;
 using Recurly.Core;
 using Recurly.Properties;
 
@@ -33,9 +34,9 @@ namespace Recurly
                 get { return RecurlyAccountNote.ElementName; }
             }
 
-            protected override RecurlyAccountNote ReadChildXml(XmlTextReader reader)
+            protected override RecurlyAccountNote InitialzeChild(XElement element)
             {
-                return new RecurlyAccountNote(reader);
+                return new RecurlyAccountNote(element);
             }
         }
 

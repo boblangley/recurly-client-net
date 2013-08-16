@@ -61,9 +61,9 @@ namespace Recurly
             AccountCode = accountCode;
         }
 
-        internal RecurlyAccount(XmlTextReader xmlReader)
+        internal RecurlyAccount(XElement element)
         {
-            ReadXml(xmlReader);
+            ReadElement(element);
         }
 
         private RecurlyAccount()
@@ -261,65 +261,19 @@ namespace Recurly
 
         #region Read and Write XML documents
 
-        protected override string RootElementName
+        protected override void ReadElement(XElement element)
         {
-            get { return ElementName; }
-        }
-
-        protected override void ProcessElement(XElement element)
-        {
-            switch (element.Name.LocalName)
-            {
-                case AccountCodeElement:
-                    AccountCode = element.Value;
-                    break;
-
-                case StateElement:
-                    State = element.ToEnum<AccountState>();
-                    break;
-
-                case UsernameElement:
-                    Username = element.Value;
-                    break;
-
-                case FirstNameElement:
-                    FirstName = element.Value;
-                    break;
-
-                case LastNameElement:
-                    LastName = element.Value;
-                    break;
-
-                case EmailElement:
-                    Email = element.Value;
-                    break;
-
-                case CompanyNameElement:
-                    CompanyName = element.Value;
-                    break;
-
-                case AcceptLanguageElement:
-                    AcceptLanguage = element.Value;
-                    break;
-
-                case HostedLoginTokenElement:
-                    HostedLoginToken = element.Value;
-                    break;
-
-                case CreatedAtElement:
-                    CreatedAt = element.ToDateTime();
-                    break;
-            }
-        }
-
-        protected override void ProcessReader(string elementName, XmlTextReader reader)
-        {
-            switch(elementName)
-            {
-                case RecurlyAddress.ElementName:
-                    Address = new RecurlyAddress(reader);
-                    break;
-            }
+                element.ProcessChild(AccountCodeElement,e => AccountCode = e.Value);
+                element.ProcessChild(StateElement, e => State = e.ToEnum<AccountState>());
+                element.ProcessChild(UsernameElement, e => Username = e.Value);
+                element.ProcessChild(FirstNameElement, e => FirstName = e.Value);
+                element.ProcessChild(LastNameElement, e => LastName = e.Value);
+                element.ProcessChild(EmailElement, e => Email = e.Value);
+                element.ProcessChild(CompanyNameElement, e => CompanyName = e.Value);
+                element.ProcessChild(AcceptLanguageElement, e => AcceptLanguage = e.Value);
+                element.ProcessChild(HostedLoginTokenElement, e => HostedLoginToken = e.Value);
+                element.ProcessChild(CreatedAtElement, e => CreatedAt = e.ToDateTime());
+                element.ProcessChild(RecurlyAddress.ElementName, e => Address = new RecurlyAddress(e));
         }
 
         internal void WriteXml(XmlTextWriter xmlWriter, bool includeAccountCode = true)

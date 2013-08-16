@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace Recurly.Core
 {
@@ -118,19 +119,11 @@ namespace Recurly.Core
 
         internal void ReadXml(List<T> items, XmlTextReader reader)
         {
-            while (reader.Read())
-            {
-                // End of items element, get out of here
-                if (reader.Name == ParentElementName && reader.NodeType == XmlNodeType.EndElement)
-                    break;
+            var root = XDocument.Load(reader).Element(ParentElementName);
 
-                if (reader.NodeType != XmlNodeType.Element) continue;
-                if(reader.Name != ChildElementName) continue;
-
-                items.Add(ReadChildXml(reader));
-            }
+            root.Elements(ChildElementName).ToList().ForEach(e => items.Add(InitialzeChild(e)));
         }
 
-        protected abstract T ReadChildXml(XmlTextReader reader);
+        protected abstract T InitialzeChild(XElement element);
     }
 }

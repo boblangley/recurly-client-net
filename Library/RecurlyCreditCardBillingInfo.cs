@@ -47,30 +47,28 @@ namespace Recurly
         {
         }
 
-        protected override void ProcessElement(XElement element)
+        internal RecurlyCreditCardBillingInfo(string accountCode, XElement element) : base(accountCode, element)
         {
-            switch (element.Name.LocalName)
-            {
-                case FirstSixElement:
-                    FirstSix = element.Value;
-                    break;
+        }
 
-                case LastFourElement:
-                    LastFour = element.Value;
-                    break;
+        protected override void ReadElement(XElement element)
+        {
+            base.ReadElement(element);
 
-                case CardTypeElement:
-                    CardType = element.Value;
-                    break;
+            element.ProcessChild(FirstSixElement, e =>
+                FirstSix = e.Value);
 
-                case ExpirationMonthElement:
-                    ExpirationMonth = element.ToInt();
-                    break;
+            element.ProcessChild(LastFourElement, e =>
+                LastFour = e.Value);
 
-                case ExpirationYearElement:
-                    ExpirationYear = element.ToInt();
-                    break;
-            }
+            element.ProcessChild(CardTypeElement, e =>
+                CardType = e.Value);
+
+            element.ProcessChild(ExpirationMonthElement, e =>
+                ExpirationMonth = e.ToInt());
+
+            element.ProcessChild(ExpirationYearElement, e =>
+                ExpirationYear = e.ToInt());
         }
 
         protected override void WriteExtendedElements(XmlTextWriter writer)

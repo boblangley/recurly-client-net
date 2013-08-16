@@ -36,9 +36,9 @@ namespace Recurly
             UnitAmountInCents = new RecurlyInCentsMapping(UnitAmountInCentsElement);
         }
 
-        internal RecurlyPlanAddon(XmlTextReader reader) : this()
+        internal RecurlyPlanAddon(XElement element) : this()
         {
-            ReadXml(reader);
+            ReadElement(element);
         }
 
         /// <summary>
@@ -92,49 +92,28 @@ namespace Recurly
                                          String.Format(Settings.Default.PathPlanAddonCRUD, PlanCode.UrlEncode()));
         }
 
-        protected override string RootElementName
+        protected override void ReadElement(XElement element)
         {
-            get { return ElementName; }
-        }
+            element.ProcessChild(AddonCodeElement, e =>
+                AddonCode = e.Value);
 
-        protected override void ProcessElement(XElement element)
-        {
-            switch (element.Name.LocalName)
-            {
-                case AddonCodeElement:
-                    AddonCode = element.Value;
-                    break;
+            element.ProcessChild(PlanCodeElement, e =>
+                PlanCode = e.GetHrefLinkId());
 
-                case PlanCodeElement:
-                    PlanCode = element.GetHrefLinkId();
-                    break;
+            element.ProcessChild(NameElement, e =>
+                Name = e.Value);
 
-                case NameElement:
-                    Name = element.Value;
-                    break;
+            element.ProcessChild(DisplayQuantityOnHostedPageElement, e =>
+                DisplayQuantityOnHostedPage = e.ToBool());
 
-                case DisplayQuantityOnHostedPageElement:
-                    DisplayQuantityOnHostedPage = element.ToBool();
-                    break;
+            element.ProcessChild(DefaultQuantityElement, e =>
+                DefaultQuantity = e.ToInt());
 
-                case DefaultQuantityElement:
-                    DefaultQuantity = element.ToInt();
-                    break;
+            element.ProcessChild(CreatedAtElement, e =>
+                CreateAt = e.ToDateTime());
 
-                case CreatedAtElement:
-                    CreateAt = element.ToDateTime();
-                    break;
-            }
-        }
-
-        protected override void ProcessReader(string elementName, XmlTextReader reader)
-        {
-            switch(elementName)
-            {
-                case UnitAmountInCentsElement:
-                    UnitAmountInCents.ReadXml(reader);
-                    break;
-            }
+            element.ProcessChild(UnitAmountInCentsElement, e =>
+                UnitAmountInCents.ReadElement(e));
         }
 
         private void WriteXml(XmlTextWriter writer)

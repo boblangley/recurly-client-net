@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Xml;
+using System.Xml.Linq;
+using Recurly.Core;
 
 namespace Recurly
 {
@@ -26,15 +28,16 @@ namespace Recurly
         {
         }
 
-        protected override void ProcessElement(System.Xml.Linq.XElement element)
+        internal RecurlyPayPalBillingInfo(string accountCode, XElement element) : base(accountCode, element)
         {
-            base.ProcessElement(element);
-            switch (element.Name.LocalName)
-            {
-                case PayPalBillingAgreementIdElement:
-                    PayPalBillingAgreementId = element.Value;
-                    break;
-            }
+        }
+
+        protected override void ReadElement(XElement element)
+        {
+            base.ReadElement(element);
+
+            element.ProcessChild(PayPalBillingAgreementIdElement, e =>
+                    PayPalBillingAgreementId = e.Value);
         }
 
         protected override void WriteExtendedElements(XmlTextWriter writer)

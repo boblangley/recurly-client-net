@@ -74,9 +74,9 @@ namespace Recurly
             TrialIntervalUnit = IntervalUnit.Months;
         }
 
-        internal RecurlyPlan(XmlTextReader reader) : this()
+        internal RecurlyPlan(XElement element) : this()
         {
-            ReadXml(reader);
+            ReadElement(element);
         }
 
         public static RecurlyPlan Get(string planCode)
@@ -143,97 +143,64 @@ namespace Recurly
             return "Recurly Plan: " + PlanCode;
         }
 
-        protected override string RootElementName
+        protected override void ReadElement(XElement element)
         {
-            get { return ElementName; }
-        }
+            element.ProcessChild(PlanCodeElement, e =>
+                PlanCode = element.Value);
 
-        protected override void ProcessElement(XElement element)
-        {
-            switch (element.Name.LocalName)
-            {
-                case PlanCodeElement:
-                    PlanCode = element.Value;
-                    break;
+            element.ProcessChild(NameElement, e =>
+                Name = element.Value);
 
-                case NameElement:
-                    Name = element.Value;
-                    break;
+            element.ProcessChild(DescriptionElement, e =>
+                Description = element.Value);
 
-                case DescriptionElement:
-                    Description = element.Value;
-                    break;
+            element.ProcessChild(SuccessUrlElement, e =>
+                SuccessUrl = element.Value);
 
-                case SuccessUrlElement:
-                    SuccessUrl = element.Value;
-                    break;
+            element.ProcessChild(CancelUrlElement, e =>
+                CancelUrl = element.Value);
 
-                case CancelUrlElement:
-                    CancelUrl = element.Value;
-                    break;
+            element.ProcessChild(DisplayDonationAmountsElement, e =>
+                DisplayDonationAmounts = element.ToBool());
 
-                case DisplayDonationAmountsElement:
-                    DisplayDonationAmounts = element.ToBool();
-                    break;
+            element.ProcessChild(DisplayQuantityElement, e =>
+                DisplayQuantity = element.ToBool());
 
-                case DisplayQuantityElement:
-                    DisplayQuantity = element.ToBool();
-                    break;
+            element.ProcessChild(DisplayPhoneNumberElement, e =>
+                DisplayPhoneNumber = element.ToBool());
 
-                case DisplayPhoneNumberElement:
-                    DisplayPhoneNumber = element.ToBool();
-                    break;
+            element.ProcessChild(BypassHostedConfirmationElement, e =>
+                BypassHostedConfirmation = element.ToBool());
 
-                case BypassHostedConfirmationElement:
-                    BypassHostedConfirmation = element.ToBool();
-                    break;
+            element.ProcessChild(UnitNameElement, e =>
+                UnitName = element.Value);
 
-                case UnitNameElement:
-                    UnitName = element.Value;
-                    break;
+            element.ProcessChild(PaymentPageTosLinkElement, e =>
+                PaymentPageTosLink = element.Value);
 
-                case PaymentPageTosLinkElement:
-                    PaymentPageTosLink = element.Value;
-                    break;
+            element.ProcessChild(PlanIntervalLengthElement, e =>
+                PlanIntervalLength = element.ToInt());
 
-                case PlanIntervalLengthElement:
-                    PlanIntervalLength = element.ToInt();
-                    break;
+            element.ProcessChild(PlanIntervalUnitElement, e =>
+                PlanIntervalUnit = element.ToEnum<IntervalUnit>());
 
-                case PlanIntervalUnitElement:
-                    PlanIntervalUnit = element.ToEnum<IntervalUnit>();
-                    break;
+            element.ProcessChild(TrialIntervalLengthElement, e =>
+                TrialIntervalLength = element.ToInt());
 
-                case TrialIntervalLengthElement:
-                    TrialIntervalLength = element.ToInt();
-                    break;
+            element.ProcessChild(TrialIntervalUnitElement, e =>
+                TrialIntervalUnit = element.ToEnum<IntervalUnit>());
 
-                case TrialIntervalUnitElement:
-                    TrialIntervalUnit = element.ToEnum<IntervalUnit>();
-                    break;
+            element.ProcessChild(AccountingCodeElement, e =>
+                AccountingCode = element.Value);
 
-                case AccountingCodeElement:
-                    AccountingCode = element.Value;
-                    break;
+            element.ProcessChild(CreatedAtElement, e =>
+                CreatedAt = element.ToDateTime());
 
-                case CreatedAtElement:
-                    CreatedAt = element.ToDateTime();
-                    break;
-            }
-        }
+            element.ProcessChild(UnitAmountInCentsElement, e =>
+                UnitAmountInCents.ReadElement(e));
 
-        protected override void ProcessReader(string elementName, XmlTextReader reader)
-        {
-            switch(elementName)
-            {
-                case UnitAmountInCentsElement:
-                    UnitAmountInCents.ReadXml(reader);
-                    break;
-
-                case SetupFeeInCentsElement:
-                    SetupFeeInCents.ReadXml(reader);
-                    break;
-            }
+            element.ProcessChild(SetupFeeInCentsElement, e =>
+                SetupFeeInCents.ReadElement(e));
         }
 
         internal void WriteXml(XmlTextWriter writer)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
@@ -10,36 +11,19 @@ namespace Recurly.Core
     /// </summary>
     public abstract class BaseRecurlyApiObject
     {
-        protected abstract string RootElementName { get; }
+        protected abstract void ReadElement( XElement element);
 
-        protected abstract void ProcessElement( XElement element);
-
-        protected virtual void PreLoopInitializion()
+        protected virtual void PreReadInitialization()
         {
         }
 
         internal virtual void ReadXml(XmlTextReader reader)
         {
-            PreLoopInitializion();
+            PreReadInitialization();
 
-            while(reader.Read())
-            {
-                if (reader.Name == RootElementName && reader.NodeType == XmlNodeType.EndElement)
-                    break;
+            var element = XDocument.Load(reader).Root;
 
-                if(reader.NodeType != XmlNodeType.Element) continue;
-
-                var element = XElement.Parse(reader.ReadOuterXml());
-
-                ProcessElement(element);
-                ProcessReader(element.Name.LocalName, reader);
-            }
+            ReadElement(element);
         }
-
-        protected virtual void ProcessReader(string elementName, XmlTextReader reader)
-        {
-            
-        }
-
     }
 }

@@ -12,11 +12,11 @@ namespace Recurly
     {
         internal const string ElementName = "transaction";
 
-        public class TransactionDetails : BaseRecurlyApiObject
+        public class TransactionDetails
         {
-            public class TransactionAccount : BaseRecurlyApiObject
+            public class TransactionAccount
             {
-                public class TransactionBillingInfo : BaseRecurlyApiObject
+                public class TransactionBillingInfo
                 {
                     private const string FirstNameElement = "first_name";
                     public string FirstName { get; private set; }
@@ -49,66 +49,52 @@ namespace Recurly
                     private const string LastFourElement = "last_four";
                     public string LastFour { get; private set; }
 
-                    internal TransactionBillingInfo(XmlTextReader reader)
+                    internal TransactionBillingInfo(XElement element)
                     {
-                        ReadXml(reader);
-                    }
+                        element.ProcessChild(FirstNameElement, e =>
+                            FirstName = e.Value);
 
-                    protected override string RootElementName
-                    {
-                        get { return BillingInfoElement; }
-                    }
+                        element.ProcessChild(LastNameElement, e =>
+                            LastName = e.Value);
 
-                    protected override void ProcessElement(XElement element)
-                    {
-                        switch (element.Name.LocalName)
-                        {
-                            case FirstNameElement:
-                                FirstName = element.Value;
-                                break;
-                            case LastNameElement:
-                                LastName = element.Value;
-                                break;
-                            case Address1Element:
-                                Address1 = element.Value;
-                                break;
-                            case Address2Element:
-                                Address2 = element.Value;
-                                break;
-                            case CityElement:
-                                City = element.Value;
-                                break;
-                            case StateElement:
-                                State = element.Value;
-                                break;
-                            case ZipElement:
-                                Zip = element.Value;
-                                break;
-                            case CountryElement:
-                                Country = element.Value;
-                                break;
-                            case PhoneElement:
-                                Phone = element.Value;
-                                break;
-                            case VatNumberElement:
-                                VatNumber = element.Value;
-                                break;
-                            case FirstSixElement:
-                                FirstSix = element.Value;
-                                break;
-                            case LastFourElement:
-                                LastFour = element.Value;
-                                break;
-                            case CardTypeElement:
-                                CardType = element.Value;
-                                break;
-                            case ExpirationMonthElement:
-                                ExpirationMonth = element.ToInt();
-                                break;
-                            case ExpirationYearElement:
-                                ExpirationYear = element.ToInt();
-                                break;
-                        }
+                        element.ProcessChild(Address1Element, e =>
+                            Address1 = e.Value);
+
+                        element.ProcessChild(Address2Element, e =>
+                            Address2 = e.Value);
+
+                        element.ProcessChild(CityElement, e =>
+                            City = e.Value);
+
+                        element.ProcessChild(StateElement, e =>
+                            State = e.Value);
+
+                        element.ProcessChild(ZipElement, e =>
+                            Zip = e.Value);
+
+                        element.ProcessChild(CountryElement, e =>
+                            Country = e.Value);
+
+                        element.ProcessChild(PhoneElement, e =>
+                            Phone = e.Value);
+
+                        element.ProcessChild(VatNumberElement, e =>
+                            VatNumber = e.Value);
+
+                        element.ProcessChild(FirstSixElement, e =>
+                            FirstSix = e.Value);
+
+                        element.ProcessChild(LastFourElement, e =>
+                            LastFour = e.Value);
+
+                        element.ProcessChild(CardTypeElement, e =>
+                            CardType = e.Value);
+
+                        element.ProcessChild(ExpirationMonthElement, e =>
+                            ExpirationMonth = e.ToInt());
+
+                        element.ProcessChild(ExpirationYearElement, e =>
+                            ExpirationYear = e.ToInt());
                     }
                 }
 
@@ -126,76 +112,34 @@ namespace Recurly
                 private const string BillingInfoElement = "billing_info";
                 public TransactionBillingInfo BillingInfo { get; private set; }
 
-                internal TransactionAccount(XmlTextReader reader)
+                internal TransactionAccount(XElement element)
                 {
-                    ReadXml(reader);
-                }
+                    element.ProcessChild(AccountCodeElement, e =>
+                        AccountCode = e.Value);
 
-                protected override string RootElementName
-                {
-                    get { return AccountElement; }
-                }
+                    element.ProcessChild(FirstNameElement, e =>
+                        FirstName = e.Value);
 
-                protected override void ProcessElement(XElement element)
-                {
-                    switch (element.Name.LocalName)
-                    {
-                        case AccountCodeElement:
-                            AccountCode = element.Value;
-                            break;
+                    element.ProcessChild(LastNameElement, e =>
+                        LastName = e.Value);
 
-                        case FirstNameElement:
-                            FirstName = element.Value;
-                            break;
+                    element.ProcessChild(EmailElement, e =>
+                        Email = e.Value);
 
-                        case LastNameElement:
-                            LastName = element.Value;
-                            break;
+                    element.ProcessChild(CompanyNameElement, e =>
+                        CompanyName = e.Value);
 
-                        case EmailElement:
-                            Email = element.Value;
-                            break;
-
-                        case CompanyNameElement:
-                            CompanyName = element.Value;
-                            break;
-                    }
-                }
-
-                protected override void ProcessReader(string elementName, XmlTextReader reader)
-                {
-                    switch(elementName)
-                    {
-                        case BillingInfoElement:
-                            BillingInfo = new TransactionBillingInfo(reader);
-                            break;
-                    }
+                    element.ProcessChild(BillingInfoElement, e =>
+                        BillingInfo = new TransactionBillingInfo(e));
                 }
             }
 
             internal const string AccountElement = "account";
             public TransactionAccount Account { get; private set; }
 
-            internal TransactionDetails(XmlTextReader reader)
+            internal TransactionDetails(XElement element)
             {
-                ReadXml(reader);
-            }
-
-            protected override string RootElementName
-            {
-                get { return TransactionDetailsElement; }
-            }
-
-            protected override void ProcessElement(XElement element) {}
-
-            protected override void ProcessReader(string elementName, XmlTextReader reader)
-            {
-                switch (elementName)
-                {
-                    case AccountElement:
-                        Account = new TransactionAccount(reader);
-                        break;
-                }
+                element.ProcessChild(AccountElement, e => Account = new TransactionAccount(e));
             }
         }
 
@@ -286,9 +230,9 @@ namespace Recurly
         {
         }
 
-        internal RecurlyTransaction(XmlTextReader reader)
+        internal RecurlyTransaction(XElement element)
         {
-            ReadXml(reader);
+            ReadElement(element);
         }
 
         /// <summary>
@@ -328,88 +272,76 @@ namespace Recurly
 
         #region Read and Write XML documents
 
-        protected override string RootElementName
+        protected override void ReadElement(XElement element)
         {
-            get { return ElementName; }
-        }
+            element.ProcessChild(IdElement, e =>
+                Id = e.Value);
 
-        protected override void ProcessElement(XElement element)
-        {
-            switch (element.Name.LocalName)
-            {
-                case IdElement:
-                    Id = element.Value;
-                    break;
-                case AccountCodeElement:
-                    AccountCode = element.GetHrefLinkId();
-                    break;
-                case InvoiceNumberElement:
-                    InvoiceNumber = element.GetHrefLinkId(int.Parse);
-                    break;
-                case SubscriptionIdElement:
-                    SubscriptionId = element.GetHrefLinkId();
-                    break;
-                case ElementName:
-                    Type = element.Attribute("type").ToEnum<TransactionType>();
-                    break;
-                case ActionElement:
-                    Action = element.Value;
-                    break;
-                case AmountInCentsElement:
-                    AmountInCents = element.ToInt();
-                    break;
-                case TaxInCentsElement:
-                    TaxInCents = element.ToInt();
-                    break;
-                case CurrencyElement:
-                    Currency = element.Value;
-                    break;
-                case StatusElement:
-                    Status = element.Value;
-                    break;
-                case ReferenceElement:
-                    Reference = element.Value;
-                    break;
-                case TestElement:
-                    Test = element.ToBool();
-                    break;
-                case VoidableElement:
-                    Voidable = element.ToBool();
-                    break;
-                case RefundableElement:
-                    Refundable = element.ToBool();
-                    break;
-                case CvvResultElement:
-                    CvvResultCode = element.Attribute("code").Value;
-                    CvvResult = element.Value;
-                    break;
-                case AvsResultElement:
-                    AvsResultCode = element.Attribute("code").Value;
-                    AvsResult = element.Value;
-                    break;
-                case AvsResultStreetElement:
-                    AvsResultStreet = element.Value;
-                    break;
-                case AvsResultPostalElement:
-                    AvsResultPostal = element.Value;
-                    break;
-                case CreatedAtElement:
-                    CreatedAt = element.ToDateTime();
-                    break;
-                case TransactionErrorElement:
-                    TransactionError = element.Value;
-                    break;
-            }
-        }
+            element.ProcessChild(AccountCodeElement, e =>
+                AccountCode = e.GetHrefLinkId());
 
-        protected override void ProcessReader(string elementName, XmlTextReader reader)
-        {
-            switch(elementName)
-            {
-                case TransactionDetailsElement:
-                    Details = new TransactionDetails(reader);
-                    break;
-            }
+            element.ProcessChild(InvoiceNumberElement, e =>
+                InvoiceNumber = e.GetHrefLinkId(int.Parse));
+
+            element.ProcessChild(SubscriptionIdElement, e =>
+                SubscriptionId = e.GetHrefLinkId());
+
+            element.ProcessChild(ElementName, e =>
+                Type = e.Attribute("type").ToEnum<TransactionType>());
+
+            element.ProcessChild(ActionElement, e =>
+                Action = e.Value);
+
+            element.ProcessChild(AmountInCentsElement, e =>
+                AmountInCents = e.ToInt());
+
+            element.ProcessChild(TaxInCentsElement, e =>
+                TaxInCents = e.ToInt());
+
+            element.ProcessChild(CurrencyElement, e =>
+                Currency = e.Value);
+
+            element.ProcessChild(StatusElement, e =>
+                Status = e.Value);
+
+            element.ProcessChild(ReferenceElement, e =>
+                Reference = e.Value);
+
+            element.ProcessChild(TestElement, e =>
+                Test = e.ToBool());
+
+            element.ProcessChild(VoidableElement, e =>
+                Voidable = e.ToBool());
+
+            element.ProcessChild(RefundableElement, e =>
+                Refundable = e.ToBool());
+
+            element.ProcessChild(CvvResultElement, e =>
+                {
+                    CvvResultCode = e.Attribute("code").Value;
+                    CvvResult = e.Value;
+                });
+
+            element.ProcessChild(AvsResultElement, e =>
+                {
+                    AvsResultCode = e.Attribute("code").Value;
+                    AvsResult = e.Value;
+                });
+
+            element.ProcessChild(AvsResultStreetElement, e =>
+                AvsResultStreet = e.Value);
+
+            element.ProcessChild(AvsResultPostalElement, e =>
+                AvsResultPostal = e.Value);
+
+            element.ProcessChild(CreatedAtElement, e =>
+                CreatedAt = e.ToDateTime());
+
+            element.ProcessChild(TransactionErrorElement, e =>
+                TransactionError = e.Value);
+
+            element.ProcessChild(TransactionDetailsElement, e =>
+                Details = new TransactionDetails(e));
         }
 
         #endregion

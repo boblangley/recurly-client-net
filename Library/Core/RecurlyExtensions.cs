@@ -8,7 +8,7 @@ using System.Xml.Linq;
 namespace Recurly.Core
 {
     internal static class RecurlyUtilities
-    {
+    {        
         public static string ReadElementAttribute(this XmlTextReader reader, string attribute)
         {
             var value = reader.GetAttribute(attribute);
@@ -19,6 +19,17 @@ namespace Recurly.Core
         {
             var value = reader.ReadElementContentAsString();
             return ParseEnumString<T>(value);
+        }
+
+        public static void ProcessChild(this XElement element, string name, Action<XElement> processDelegate)
+        {
+            var child = element.Element(name);
+            if(child != null)
+                processDelegate(child);
+            else
+            {
+                Console.WriteLine("Child {0} not found in {1}",name,element);
+            }
         }
 
         public static T ToEnum<T>(this XElement element) where T : struct

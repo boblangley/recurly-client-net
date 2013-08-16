@@ -19,42 +19,16 @@ namespace Recurly
         private const string CreatedAtElement = "created_at";
         public DateTime CreatedAt { get; private set; }
 
-        internal RecurlyAccountNote(XmlTextReader reader)
+        internal RecurlyAccountNote(XElement element)
         {
-            ReadXml(reader);
+            ReadElement(element);
         }
 
-        protected override string RootElementName
+        protected override void ReadElement(XElement element)
         {
-            get { return ElementName; }
-        }
-
-        protected override void ProcessElement(XElement element)
-        {
-            switch (element.Name.LocalName)
-            {
-                case AccountCodeElement:
-                    AccountCode = element.Attribute("href").Value.Split('/').Last();
-                    break;
-                case MessageElement:
-                    Message = element.Value;
-                    break;
-                case CreatedAtElement:
-                    CreatedAt = element.ToDateTime();
-                    break;
-            }
-        }
-
-        private void ReadXml(XmlTextReader reader)
-        {
-            while(reader.Read())
-            {
-                if(reader.Name == ElementName && reader.NodeType == XmlNodeType.EndElement)
-                    break;
-
-                if(reader.NodeType != XmlNodeType.Element) continue;
-
-            }
+            element.ProcessChild(AccountCodeElement, e => AccountCode = e.GetHrefLinkId());
+            element.ProcessChild(MessageElement, e => Message = e.Value);
+            element.ProcessChild(CreatedAtElement, e => CreatedAt = e.ToDateTime());
         }
     }
 }

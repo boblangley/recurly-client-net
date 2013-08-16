@@ -33,42 +33,21 @@ namespace Recurly
         {
         }
 
-        internal RecurlyAddress(XmlTextReader reader)
+        internal RecurlyAddress(XElement element)
         {
-            ReadXml(reader);
+            ReadElement(element);
         }
 
-        protected override string RootElementName
+        protected override void ReadElement(XElement element)
         {
-            get { return ElementName; }
-        }
-
-        protected override void ProcessElement(XElement element)
-        {
-            switch (element.Name.LocalName)
-            {
-                case Address1Element:
-                    Address1 = element.Value;
-                    break;
-                case Address2Element:
-                    Address2 = element.Value;
-                    break;
-                case CityElement:
-                    City = element.Value;
-                    break;
-                case StateElement:
-                    State = element.Value;
-                    break;
-                case ZipElement:
-                    Zip = element.Value;
-                    break;
-                case CountryElement:
-                    Country = element.Value;
-                    break;
-                case PhoneElement:
-                    Phone = element.Value;
-                    break;
-            }
+            
+            element.ProcessChild(Address1Element, e => Address1 = e.Value);
+            element.ProcessChild(Address2Element, e => Address2 = e.Value);
+            element.ProcessChild(CityElement, e => City = e.Value);
+            element.ProcessChild(StateElement, e => State = e.Value);
+            element.ProcessChild(ZipElement, e => Zip = e.Value);
+            element.ProcessChild(CountryElement, e => Country = e.Value);
+            element.ProcessChild(PhoneElement, e => Phone = e.Value);
         }
 
         internal void WriteXml(XmlTextWriter writer)

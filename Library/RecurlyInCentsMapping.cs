@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace Recurly
 {
@@ -73,17 +74,14 @@ namespace Recurly
             _innerDic.Select(i => i.Value).ToList().ForEach(itemActionDelegate);
         }
 
-        internal void ReadXml(XmlTextReader reader)
+        internal void ReadElement(XElement element)
         {
-            while(reader.Read())
-            {
-                if (reader.Name == _elementName && reader.NodeType == XmlNodeType.EndElement)
-                    break;
+            element.Elements().ToList().ForEach(AddCurrency);
+        }
 
-                if(reader.NodeType != XmlNodeType.Element) continue;
-
-                _innerDic.Add(reader.Name, new RecurlyInCentsItem(reader));
-            }
+        private void AddCurrency(XElement element)
+        {
+            _innerDic.Add(element.Name.LocalName, new RecurlyInCentsItem(element));
         }
 
         internal void WriteXml(XmlTextWriter writer)

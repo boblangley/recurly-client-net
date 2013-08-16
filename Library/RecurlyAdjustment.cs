@@ -95,9 +95,9 @@ namespace Recurly
             Currency = RecurlyClient.Currency;
         }
 
-        internal RecurlyAdjustment(XmlTextReader reader)
+        internal RecurlyAdjustment(XElement element)
         {
-            ReadXml(reader);
+            ReadElement(element);
         }
 
         /// <summary>
@@ -131,68 +131,41 @@ namespace Recurly
                                          String.Format(Settings.Default.PathAccountAdjustmentDelete, AccountCode));
         }
 
-        protected override string RootElementName
+        protected override void ReadElement(XElement element)
         {
-            get { return ElementName; }
-        }
+            Type = element.Attribute(TypeAttribute).ToEnum<AdjustmentType>();
 
-        protected override void ProcessElement(XElement element)
-        {
-            switch (element.Name.LocalName)
-            {
-                case ElementName:
-                    Type = element.Attribute(TypeAttribute).ToEnum<AdjustmentType>();
-                    break;
-
-                case AccountCodeListElement:
-                    AccountCode = element.GetHrefLinkId();
-                    break;
-                case IdElement:
-                    Id = element.Value;
-                    break;
-                case DescriptionElement:
-                    Description = element.Value;
-                    break;
-                case AccountingCodeElement:
-                    AccountingCode = element.Value;
-                    break;
-                case OriginElement:
-                    Origin = element.Value;
-                    break;
-                case UnitAmountInCentsElement:
-                    UnitAmountInCents = element.ToInt();
-                    break;
-                case QuantityElement:
-                    Quantity = element.ToInt();
-                    break;
-                case DiscountInCentsElement:
-                    DiscountInCents = element.ToInt();
-                    break;
-                case TaxInCentsElement:
-                    TaxInCents = element.ToInt();
-                    break;
-                case TotalInCentsElement:
-                    TotalInCents = element.ToInt();
-                    break;
-                case CurrencyElement:
-                    Currency = element.Value;
-                    break;
-                case TaxableElement:
-                    Taxable = element.ToBool();
-                    break;
-                case ProductCodeElement:
-                    ProductCode = element.Value;
-                    break;
-                case StartDateElement:
-                    StartDate = element.ToDateTime();
-                    break;
-                case EndDateElement:
-                    EndDate = element.ToNullable(DateTime.Parse);
-                    break;
-                case CreatedAtElement:
-                    CreatedAt = element.ToDateTime();
-                    break;
-            }
+            element.ProcessChild(AccountCodeListElement, e => AccountCode = e.GetHrefLinkId());
+            element.ProcessChild(IdElement, e => 
+                Id = e.Value);
+            element.ProcessChild(DescriptionElement, e => 
+                Description = e.Value);
+            element.ProcessChild(AccountingCodeElement, e => 
+                AccountingCode = e.Value);
+            element.ProcessChild(OriginElement, e => 
+                Origin = e.Value);
+            element.ProcessChild(UnitAmountInCentsElement, e => 
+                UnitAmountInCents = e.ToInt());
+            element.ProcessChild(QuantityElement, e => 
+                Quantity = e.ToInt());
+            element.ProcessChild(DiscountInCentsElement, e => 
+                DiscountInCents = e.ToInt());
+            element.ProcessChild(TaxInCentsElement, e => 
+                TaxInCents = e.ToInt());
+            element.ProcessChild(TotalInCentsElement, e => 
+                TotalInCents = e.ToInt());
+            element.ProcessChild(CurrencyElement, e => 
+                Currency = e.Value);
+            element.ProcessChild(TaxableElement, e => 
+                Taxable = e.ToBool());
+            element.ProcessChild(ProductCodeElement, e => 
+                ProductCode = e.Value);
+            element.ProcessChild(StartDateElement, e => 
+                StartDate = e.ToDateTime());
+            element.ProcessChild(EndDateElement, e => 
+                EndDate = e.ToNullable(DateTime.Parse));
+            element.ProcessChild(CreatedAtElement, e => 
+                CreatedAt = e.ToDateTime());
         }
 
         private void WriteXml(XmlTextWriter writer)

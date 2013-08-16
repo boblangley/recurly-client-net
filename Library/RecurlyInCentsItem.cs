@@ -3,6 +3,8 @@ using System.Collections;
 using System.Globalization;
 using System.Linq;
 using System.Xml;
+using System.Xml.Linq;
+using Recurly.Core;
 
 namespace Recurly
 {
@@ -15,10 +17,10 @@ namespace Recurly
         {
         }
 
-        internal RecurlyInCentsItem(XmlTextReader reader)
+        internal RecurlyInCentsItem(XElement element)
         {
-            Currency = reader.Name;
-            AmountInCents = reader.ReadElementContentAsInt();
+            Currency = element.Name.LocalName;
+            AmountInCents = element.ToInt();
         }
 
         internal void WriteXml(XmlTextWriter writer)

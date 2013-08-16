@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml;
+using System.Xml.Linq;
 using Recurly.Core;
 using Recurly.Properties;
 
@@ -34,9 +35,9 @@ namespace Recurly
                 get { return RecurlyInvoice.ElementName; }
             }
 
-            protected override RecurlyInvoice ReadChildXml(XmlTextReader reader)
+            protected override RecurlyInvoice InitialzeChild(XElement element)
             {
-                return new RecurlyInvoice(reader);                
+                return new RecurlyInvoice(element);                
             }
         }
 
