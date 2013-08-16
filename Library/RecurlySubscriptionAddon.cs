@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Xml;
+using System.Xml.Linq;
+using Recurly.Core;
 
 namespace Recurly
 {
-    public class RecurlySubscriptionAddon
+    public class RecurlySubscriptionAddon : BaseRecurlyApiObject
     {
         internal const string ElementName = "subscription_add_on";
 
@@ -53,29 +55,26 @@ namespace Recurly
                 Quantity = quantity;
         }
 
-        protected void ReadXml(XmlTextReader reader)
+        protected override string RootElementName
         {
-            while(reader.Read())
+            get { return ElementName; }
+        }
+
+        protected override void ProcessElement(XElement element)
+        {
+            switch (element.Name.LocalName)
             {
-                // End of subscription element, get out of here
-                if(reader.Name == ElementName && reader.NodeType == XmlNodeType.EndElement)
+                case AddonCodeElement:
+                    AddonCode = element.Value;
                     break;
 
-                if(reader.NodeType != XmlNodeType.Element) continue;
-                switch(reader.Name)
-                {
-                    case AddonCodeElement:
-                        AddonCode = reader.ReadElementContentAsString();
-                        break;
+                case UnitAmountInCentsElement:
+                    UnitAmountInCents = element.ToInt();
+                    break;
 
-                    case UnitAmountInCentsElement:
-                        UnitAmountInCents = reader.ReadElementContentAsInt();
-                        break;
-
-                    case QuantityElement:
-                        Quantity = reader.ReadElementContentAsInt();
-                        break;
-                }
+                case QuantityElement:
+                    Quantity = element.ToInt();
+                    break;
             }
         }
 

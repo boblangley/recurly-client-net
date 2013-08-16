@@ -4,14 +4,29 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Xml;
+using System.Xml.Linq;
+using Recurly.Core;
 using Recurly.Properties;
 
 namespace Recurly
 {
-    public class RecurlySubscription
+    /// <summary>
+    /// A Subscription
+    /// </summary>
+    public class RecurlySubscription : BaseRecurlyApiObject
     {
-        internal const string ElementName = "subscription";
+        internal static string ElementName = "subscription";
 
+        private string _elementName = ElementName;
+
+        protected override string RootElementName
+        {
+            get { return _elementName; }
+        }
+
+        /// <summary>
+        /// The state of subscription
+        /// </summary>
         public enum SubscriptionState
         {
             Active,
@@ -42,26 +57,29 @@ namespace Recurly
             Manual
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public class RecurlyManualInvoiceDetails
-        {
+        {            
             private const string NetTermsElement = "net_terms";
             public int NetTerms { get; set; }
             private const string PurchaseOrderNumberElement = "po_number";
             public string PurchaseOrderNumber { get; set; }
 
-            internal static void ProcessElement(XmlTextReader reader, RecurlySubscription sub)
+            internal static void ProcessElement(XElement element, RecurlySubscription sub)
             {
-                switch(reader.Name)
+                switch(element.Name.LocalName)
                 {
                     case NetTermsElement:
                         if(sub.ManualInvoiceDetails == null)
                             sub.ManualInvoiceDetails = new RecurlyManualInvoiceDetails();
-                        sub.ManualInvoiceDetails.NetTerms = reader.ReadElementContentAsInt();                        
+                        sub.ManualInvoiceDetails.NetTerms = element.ToInt();
                         break;
                     case PurchaseOrderNumberElement:
                         if(sub.ManualInvoiceDetails == null)
                             sub.ManualInvoiceDetails = new RecurlyManualInvoiceDetails();
-                        sub.ManualInvoiceDetails.PurchaseOrderNumber = reader.ReadElementContentAsString();
+                        sub.ManualInvoiceDetails.PurchaseOrderNumber = element.Value;
                         break;
                 }
             }
@@ -137,6 +155,7 @@ namespace Recurly
 
         public RecurlySubscription()
         {
+            
             Addons = new List<RecurlySubscriptionAddon>();
             Quantity = 1;
         }
@@ -146,6 +165,11 @@ namespace Recurly
             ReadXml(reader);
         }
 
+        /// <summary>
+        /// Lookup a subscription's details.
+        /// </summary>
+        /// <param name="subscriptionId"></param>
+        /// <returns></returns>
         public static RecurlySubscription Get(string subscriptionId)
         {
             var sub = new RecurlySubscription();
@@ -157,6 +181,17 @@ namespace Recurly
             return statusCode == HttpStatusCode.NotFound ? null : sub;
         }
 
+        /// <summary>
+        /// Create a new subscription.
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="couponCode"></param>
+        /// <param name="currency"></param>
+        /// <param name="startsAt"></param>
+        /// <param name="billingCycles"></param>
+        /// <param name="firstRenewalDate"></param>
+        /// <param name="manualInvoice"></param>
+        /// <returns></returns>
         public bool Create(RecurlyAccount account, string couponCode = null, string currency = null, DateTime? startsAt = null, int? billingCycles = null, DateTime? firstRenewalDate = null, RecurlyManualInvoiceDetails manualInvoice = null)
         {            
             if (String.IsNullOrWhiteSpace(PlanCode)) throw new InvalidOperationException("PlanCode must be provided in order to create a subscription");
@@ -189,6 +224,11 @@ namespace Recurly
             return statusCode == HttpStatusCode.Created;
         }
 
+        /// <summary>
+        /// Request an update to a subscription that takes place immediately or at renewal.
+        /// </summary>
+        /// <param name="timeframe"></param>
+        /// <param name="newPlanCode"></param>
         public void Update(ChangeTimeframe timeframe, string newPlanCode = null)
         {
             if (newPlanCode != null && String.IsNullOrWhiteSpace(newPlanCode)) throw new ArgumentException("newPlanCode", "A new PlanCode cannot be empty if provided");
@@ -198,18 +238,28 @@ namespace Recurly
                                          writer => WriteChangeXml(writer, timeframe, newPlanCode), ReadXml);
         }
 
+        /// <summary>
+        /// Cancel a subscription so it remains active and then expires at the end of the current bill cycle.
+        /// </summary>
         public void Cancel()
         {
             RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
                                          String.Format(Settings.Default.PathSubscriptionCancel, Id));
         }
 
+        /// <summary>
+        /// Reactivate a canceled subscription so it renews at the end of the current bill cycle.
+        /// </summary>
         public void Reactivate()
         {
             RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
                                          String.Format(Settings.Default.PathSubscriptionReactivate, Id));
         }
 
+        /// <summary>
+        /// You may remove any stored billing information for an account. If the account has a subscription, the renewal will go into past due unless you update the billing info before the renewal occurs.
+        /// </summary>
+        /// <param name="refund"></param>
         public void Terminate(RefundType refund)
         {
             RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
@@ -217,6 +267,10 @@ namespace Recurly
                                                        Enum.GetName(refund.GetType(), refund).ToLower()));
         }
 
+        /// <summary>
+        /// Delays renewal of a subscription
+        /// </summary>
+        /// <param name="nextRenewalDate"></param>
         public void Postpone(DateTime nextRenewalDate)
         {
             if (nextRenewalDate.Date <= DateTime.Now.Date) throw new ArgumentOutOfRangeException("nextRenewalDate","Renewal date must be in the future to postpone");
@@ -227,96 +281,91 @@ namespace Recurly
 
         #region Read and Write XML documents
 
-        internal void ReadXml(XmlTextReader reader)
-        {
-            ReadXml(reader, "subscription");
-        }
-
-        internal void ReadXml(XmlTextReader reader, string elementname)
+        protected override void PreLoopInitializion()
         {
             Addons.Clear();
+        }
 
-            while (reader.Read())
+        protected override void ProcessElement(XElement element)
+        {
+            switch(element.Name.LocalName)
             {
-                // End of subscription element, get out of here
-                if (reader.Name == elementname && reader.NodeType == XmlNodeType.EndElement)
+                case AccountCodeElement:
+                    AccountCode = element.Attribute("href").Value.Split('/').Last();
                     break;
 
-                if(reader.NodeType != XmlNodeType.Element) continue;
-                switch (reader.Name)
-                {
-                    case AccountCodeElement:
-                        var accountHref = reader.ReadElementAttribute("href");
-                        AccountCode = accountHref.Split('/').Last();
-                        break;
+                case PlanCodeElement:
+                    PlanCode = element.Value;
+                    break;
 
-                    case PlanCodeElement:
-                        PlanCode = reader.ReadElementContentAsString();
-                        break;
+                case IdElement:
+                    Id = element.Value;
+                    break;
 
-                    case IdElement:
-                        Id = reader.ReadElementContentAsString();
-                        break;
+                case StateElement:
+                    State = element.ToEnum<SubscriptionState>();
+                    break;
 
-                    case StateElement:
-                        State = reader.ReadElementContentAsEnum<SubscriptionState>();
-                        break;
+                case UnitAmountInCentsElement:
+                    UnitAmountInCents = element.ToInt();
+                    break;
 
-                    case UnitAmountInCentsElement:
-                        UnitAmountInCents = reader.ReadElementContentAsInt();
-                        break;
+                case CurrencyElement:
+                    Currency = element.Value;
+                    break;
 
-                    case CurrencyElement:
-                        Currency = reader.ReadElementContentAsString();
-                        break;
+                case QuantityElement:
+                    Quantity = element.ToInt();
+                    break;
 
-                    case QuantityElement:
-                        Quantity = reader.ReadElementContentAsInt();
-                        break;
+                case ActivatedAtElement:
+                    ActivatedAt = element.ToDateTime();
+                    break;
 
-                    case ActivatedAtElement:
-                        ActivatedAt = reader.ReadElementContentAsDateTime();
-                        break;
+                case CanceledAtElement:
+                    CanceledAt = element.ToNullable(DateTime.Parse);
+                    break;
 
-                    case CanceledAtElement:
-                        CanceledAt = reader.ReadElementContentAsNullable(r => r.ReadElementContentAsDateTime());
-                        break;
+                case ExpiresAtElement:
+                    ExpiresAt = element.ToNullable(DateTime.Parse);
+                    break;
 
-                    case ExpiresAtElement:
-                        ExpiresAt = reader.ReadElementContentAsNullable(r => r.ReadElementContentAsDateTime());
-                        break;
+                case CurrentPeriodStartedAtElement:
+                    CurrentPeriodStartedAt = element.ToNullable(DateTime.Parse);
+                    break;
 
-                    case CurrentPeriodStartedAtElement:
-                        CurrentPeriodStartedAt = reader.ReadElementContentAsNullable(r => r.ReadElementContentAsDateTime());
-                        break;
+                case CurrentPeriodEndsAtElement:
+                    CurrentPeriodEndsAt = element.ToNullable(DateTime.Parse);
+                    break;
 
-                    case CurrentPeriodEndsAtElement:
-                        CurrentPeriodEndsAt = reader.ReadElementContentAsNullable(r => r.ReadElementContentAsDateTime());
-                        break;
+                case TrialStartedAtElement:
+                    TrialStartedAt = element.ToNullable(DateTime.Parse);
+                    break;
 
-                    case TrialStartedAtElement:
-                        TrialStartedAt = reader.ReadElementContentAsNullable(r => r.ReadElementContentAsDateTime());
-                        break;
+                case TrialEndsAtElement:
+                    _trialEndsAt = element.ToNullable(DateTime.Parse);
+                    break;
 
-                    case TrialEndsAtElement:
-                        _trialEndsAt = reader.ReadElementContentAsNullable(r => r.ReadElementContentAsDateTime());
-                        break;
-
-                    case RecurlySubscriptionAddon.ElementName:
-                        Addons.Add(new RecurlySubscriptionAddon(reader));
-                        break;
-
-                    case PendingSubscriptionElement:
-                        PendingSubscription = new RecurlySubscription();
-                        PendingSubscription.ReadXml(reader,PendingSubscriptionElement);
-                        break;
-
-                    case CollectionMethodElement:
-                        CollectionMethod = reader.ReadElementContentAsEnum<CollectionMethods>();
-                        break;
-                }
-                RecurlyManualInvoiceDetails.ProcessElement(reader, this);
+                case CollectionMethodElement:
+                    CollectionMethod = element.ToEnum<CollectionMethods>();
+                    break;
             }
+            RecurlyManualInvoiceDetails.ProcessElement(element, this);
+        }
+
+        protected override void ProcessReader(string elementName, XmlTextReader reader)
+        {
+ 	        switch(elementName)
+ 	        {
+                case RecurlySubscriptionAddon.ElementName:
+                    Addons.Add(new RecurlySubscriptionAddon(reader));
+                    break;
+
+                case PendingSubscriptionElement:
+                    PendingSubscription = new RecurlySubscription {_elementName = PendingSubscriptionElement};
+ 	                PendingSubscription.ReadXml(reader);
+                    break;
+ 	        }            
         }
 
         protected void WriteCreateXml(XmlTextWriter writer, RecurlyAccount account, string couponCode, int? billingCycles, DateTime? firstRenewalDate)

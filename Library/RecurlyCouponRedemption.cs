@@ -2,11 +2,13 @@
 using System.Linq;
 using System.Net;
 using System.Xml;
+using System.Xml.Linq;
+using Recurly.Core;
 using Recurly.Properties;
 
 namespace Recurly
 {
-    public class RecurlyCouponRedemption
+    public class RecurlyCouponRedemption : BaseRecurlyApiObject
     {
         private const string ElementName = "redemption";
 
@@ -64,35 +66,33 @@ namespace Recurly
             return statusCode == HttpStatusCode.OK ? redemption : null;
         }
 
-        internal void ReadXml(XmlTextReader reader)
+        protected override string RootElementName
         {
-            while(reader.Read())
-            {
-                if (reader.Name == ElementName && reader.NodeType == XmlNodeType.EndElement)
-                    break;
+            get { return ElementName; }
+        }
 
-                if(reader.NodeType != XmlNodeType.Element) continue;
-                switch(reader.Name)
-                {
-                    case SingleUseElement:
-                        SingleUse = reader.ReadElementContentAsBoolean();
-                        break;
-                    case TotalDiscountedInCentsElement:
-                        TotalDiscountedInCents = reader.ReadElementContentAsInt();
-                        break;
-                    case CreatedAtElement:
-                        CreatedAt = reader.ReadElementContentAsDateTime();
-                        break;
-                    case CouponCodeElement:
-                        CouponCode = reader.ReadElementAttribute("href").Split('/').Last();
-                        break;
-                    case AccountLinkElement:
-                        AccountCode = reader.ReadElementAttribute("href").Split('/').Last();
-                        break;
-                    case StateElement:
-                        State = reader.ReadElementContentAsString();
-                        break;
-                }
+        protected override void ProcessElement(XElement element)
+        {
+            switch (element.Name.LocalName)
+            {
+                case SingleUseElement:
+                    SingleUse = element.ToBool();
+                    break;
+                case TotalDiscountedInCentsElement:
+                    TotalDiscountedInCents = element.ToInt();
+                    break;
+                case CreatedAtElement:
+                    CreatedAt = element.ToDateTime();
+                    break;
+                case CouponCodeElement:
+                    CouponCode = element.GetHrefLinkId();
+                    break;
+                case AccountLinkElement:
+                    AccountCode = element.GetHrefLinkId();
+                    break;
+                case StateElement:
+                    State = element.Value;
+                    break;
             }
         }
 

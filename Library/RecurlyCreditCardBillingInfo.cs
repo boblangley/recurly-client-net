@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Globalization;
 using System.Xml;
+using System.Xml.Linq;
+using Recurly.Core;
 
 namespace Recurly
 {
+    /// <summary>
+    /// Billing Info with credit card information
+    /// </summary>
     public class RecurlyCreditCardBillingInfo : RecurlyBillingInfo
     {
         private const string FirstSixElement = "first_six";
@@ -42,28 +47,28 @@ namespace Recurly
         {
         }
 
-        protected override void ReadExtendedElements(XmlTextReader reader)
+        protected override void ProcessElement(XElement element)
         {
-            switch (reader.Name)
+            switch (element.Name.LocalName)
             {
                 case FirstSixElement:
-                    FirstSix = reader.ReadElementContentAsString();
+                    FirstSix = element.Value;
                     break;
 
                 case LastFourElement:
-                    LastFour = reader.ReadElementContentAsString();
+                    LastFour = element.Value;
                     break;
 
                 case CardTypeElement:
-                    CardType = reader.ReadElementContentAsString();
+                    CardType = element.Value;
                     break;
 
                 case ExpirationMonthElement:
-                    ExpirationMonth = reader.ReadElementContentAsInt();
+                    ExpirationMonth = element.ToInt();
                     break;
 
                 case ExpirationYearElement:
-                    ExpirationYear = reader.ReadElementContentAsInt();
+                    ExpirationYear = element.ToInt();
                     break;
             }
         }

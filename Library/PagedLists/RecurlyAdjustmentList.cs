@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Xml;
+using Recurly.Core;
 using Recurly.Properties;
 
 namespace Recurly

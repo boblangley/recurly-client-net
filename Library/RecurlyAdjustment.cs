@@ -3,11 +3,13 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Xml;
+using System.Xml.Linq;
+using Recurly.Core;
 using Recurly.Properties;
 
 namespace Recurly
 {
-    public class RecurlyAdjustment
+    public class RecurlyAdjustment : BaseRecurlyApiObject
     {
         internal const string ElementName = "adjustment";
         private const int MaxAdjustementUnitAmountInCents = 10000000;
@@ -129,69 +131,67 @@ namespace Recurly
                                          String.Format(Settings.Default.PathAccountAdjustmentDelete, AccountCode));
         }
 
-        private void ReadXml(XmlTextReader reader)
+        protected override string RootElementName
         {
-            while(reader.Read())
+            get { return ElementName; }
+        }
+
+        protected override void ProcessElement(XElement element)
+        {
+            switch (element.Name.LocalName)
             {
-                if(reader.Name == ElementName && reader.NodeType == XmlNodeType.EndElement)
+                case ElementName:
+                    Type = element.Attribute(TypeAttribute).ToEnum<AdjustmentType>();
                     break;
 
-                if(reader.NodeType != XmlNodeType.Element) continue;
-                switch(reader.Name)
-                {
-                    case ElementName:
-                        Type = reader.ReadElementAttributeAsEnum<AdjustmentType>(TypeAttribute);
-                        break;
-
-                    case AccountCodeListElement:
-                        AccountCode = reader.ReadElementAttribute("href").Split('/').Last();
-                        break;
-                    case IdElement:
-                        Id = reader.ReadElementContentAsString();
-                        break;
-                    case DescriptionElement:
-                        Description = reader.ReadElementContentAsString();
-                        break;
-                    case AccountingCodeElement:
-                        AccountingCode = reader.ReadElementContentAsString();
-                        break;
-                    case OriginElement:
-                        Origin = reader.ReadElementContentAsString();
-                        break;
-                    case UnitAmountInCentsElement:
-                        UnitAmountInCents = reader.ReadElementContentAsInt();
-                        break;
-                    case QuantityElement:
-                        Quantity = reader.ReadElementContentAsInt();
-                        break;
-                    case DiscountInCentsElement:
-                        DiscountInCents = reader.ReadElementContentAsInt();
-                        break;
-                    case TaxInCentsElement:
-                        TaxInCents = reader.ReadElementContentAsInt();
-                        break;
-                    case TotalInCentsElement:
-                        TotalInCents = reader.ReadElementContentAsInt();
-                        break;
-                    case CurrencyElement:
-                        Currency = reader.ReadElementContentAsString();
-                        break;
-                    case TaxableElement:
-                        Taxable = reader.ReadElementContentAsBoolean();
-                        break;
-                    case ProductCodeElement:
-                        ProductCode = reader.ReadElementContentAsString();
-                        break;
-                    case StartDateElement:
-                        StartDate = reader.ReadElementContentAsDateTime();
-                        break;
-                    case EndDateElement:
-                        EndDate = reader.ReadElementContentAsNullable(r =>r.ReadElementContentAsDateTime());
-                        break;
-                    case CreatedAtElement:
-                        CreatedAt = reader.ReadElementContentAsDateTime();
-                        break;
-                }
+                case AccountCodeListElement:
+                    AccountCode = element.GetHrefLinkId();
+                    break;
+                case IdElement:
+                    Id = element.Value;
+                    break;
+                case DescriptionElement:
+                    Description = element.Value;
+                    break;
+                case AccountingCodeElement:
+                    AccountingCode = element.Value;
+                    break;
+                case OriginElement:
+                    Origin = element.Value;
+                    break;
+                case UnitAmountInCentsElement:
+                    UnitAmountInCents = element.ToInt();
+                    break;
+                case QuantityElement:
+                    Quantity = element.ToInt();
+                    break;
+                case DiscountInCentsElement:
+                    DiscountInCents = element.ToInt();
+                    break;
+                case TaxInCentsElement:
+                    TaxInCents = element.ToInt();
+                    break;
+                case TotalInCentsElement:
+                    TotalInCents = element.ToInt();
+                    break;
+                case CurrencyElement:
+                    Currency = element.Value;
+                    break;
+                case TaxableElement:
+                    Taxable = element.ToBool();
+                    break;
+                case ProductCodeElement:
+                    ProductCode = element.Value;
+                    break;
+                case StartDateElement:
+                    StartDate = element.ToDateTime();
+                    break;
+                case EndDateElement:
+                    EndDate = element.ToNullable(DateTime.Parse);
+                    break;
+                case CreatedAtElement:
+                    CreatedAt = element.ToDateTime();
+                    break;
             }
         }
 

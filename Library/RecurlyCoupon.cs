@@ -6,11 +6,16 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
+using System.Xml.Linq;
+using Recurly.Core;
 using Recurly.Properties;
 
 namespace Recurly
 {
-    public class RecurlyCoupon
+    /// <summary>
+    /// A coupon that can be applied to an account or subscription
+    /// </summary>
+    public class RecurlyCoupon : BaseRecurlyApiObject
     {
         internal const string ElementName = "coupon";
 
@@ -50,7 +55,7 @@ namespace Recurly
         public int? DiscountPercent { get; set; }
 
         private const string DiscountInCentsElement = "discount_in_cents";
-        private Dictionary<string, int> DiscountInCents { get; set; }
+        private RecurlyInCentsMapping DiscountInCents { get; set; }
 
         private const string RedeemByDateElement = "redeem_by_date";
         public DateTime? RedeemByDate { get; set; }
@@ -79,7 +84,7 @@ namespace Recurly
         private RecurlyCoupon()
         {
             PlanCodes = new List<string>();
-            DiscountInCents = new Dictionary<string, int>();
+            DiscountInCents = new RecurlyInCentsMapping(DiscountInCentsElement);
         }
 
         internal RecurlyCoupon(XmlTextReader xmlReader) : this()
@@ -147,8 +152,7 @@ namespace Recurly
             var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Post,
                 String.Format(Settings.Default.PathRedeemCoupon,HttpUtility.UrlEncode(couponCode)),
                 redemption.WriteXml,
-                redemption.ReadXml,
-                null);
+                redemption.ReadXml);
 
             return statusCode == HttpStatusCode.Created ? redemption : null;
         }
@@ -163,89 +167,80 @@ namespace Recurly
 
         #region Read and Write XML documents
 
-        internal void ReadXml(XmlTextReader reader)
+        protected override string RootElementName
         {
-            while (reader.Read())
+            get { return ElementName; }
+        }
+
+        protected override void ProcessElement(XElement element)
+        {
+            switch (element.Name.LocalName)
             {
-                if (reader.Name == ElementName && reader.NodeType == XmlNodeType.EndElement)
+                case CouponCodeElement:
+                    CouponCode = element.Value;
                     break;
 
-                if(reader.NodeType != XmlNodeType.Element) continue;
-                switch (reader.Name)
-                {
-                    case CouponCodeElement:
-                        CouponCode = reader.ReadElementContentAsString();
-                        break;
+                case NameElement:
+                    Name = element.Value;
+                    break;
 
-                    case NameElement:
-                        Name = reader.ReadElementContentAsString();
-                        break;
+                case StateElement:
+                    State = element.ToEnum<CouponState>();
+                    break;
 
-                    case StateElement:
-                        State = reader.ReadElementContentAsEnum<CouponState>();
-                        break;
+                case HostedDescriptionElement:
+                    HostedDescription = element.Value;
+                    break;
 
-                    case HostedDescriptionElement:
-                        HostedDescription = reader.ReadElementContentAsString();
-                        break;
+                case InvoiceDescriptionElement:
+                    InvoiceDescription = element.Value;
+                    break;
 
-                    case InvoiceDescriptionElement:
-                        InvoiceDescription = reader.ReadElementContentAsString();
-                        break;
+                case DiscountTypeElement:
+                    Type = element.ToEnum<DiscountType>();
+                    break;
 
-                    case DiscountTypeElement:
-                        Type = reader.ReadElementContentAsEnum<DiscountType>();
-                        break;
+                case DiscountPercentElement:
+                    DiscountPercent = element.ToInt();
+                    break;
 
-                    case DiscountPercentElement:
-                        DiscountPercent = reader.ReadElementContentAsInt();
-                        break;
+                case RedeemByDateElement:
+                    RedeemByDate = element.ToNullable(DateTime.Parse);
+                    break;
 
-                    case DiscountInCentsElement:
-                        ReadDollarsMapping(reader);
-                        break;
+                case SingleUseElement:
+                    SingleUse = element.ToBool();
+                    break;
 
-                    case RedeemByDateElement:
-                        RedeemByDate = reader.ReadElementContentAsNullable(r => r.ReadElementContentAsDateTime());
-                        break;
+                case AppliesForMonthsElement:
+                    AppliesForMonths = element.ToNullable(int.Parse);
+                    break;
 
-                    case SingleUseElement:
-                        SingleUse = reader.ReadElementContentAsBoolean();
-                        break;
+                case MaxRedemptionsElement:
+                    MaxRedemptions = element.ToInt();
+                    break;
 
-                    case AppliesForMonthsElement:
-                        AppliesForMonths = reader.ReadElementContentAsNullable(r => r.ReadElementContentAsInt());
-                        break;
+                case AppliesToAllPlansElement:
+                    AppliesToAllPlans = element.ToBool();
+                    break;
 
-                    case MaxRedemptionsElement:
-                        MaxRedemptions = reader.ReadElementContentAsInt();
-                        break;
+                case CreatedAtElement:
+                    CreatedAt = element.ToDateTime();
+                    break;
 
-                    case AppliesToAllPlansElement:
-                        AppliesToAllPlans = reader.ReadElementContentAsBoolean();
-                        break;
-
-                    case CreatedAtElement:
-                        CreatedAt = reader.ReadElementContentAsDateTime();
-                        break;
-
-                    case PlanCodeItemElement:
-                        PlanCodes.Add(reader.ReadElementContentAsString());
-                        break;
-                }
+                case PlanCodeItemElement:
+                    PlanCodes.Add(element.Value);
+                    break;
             }
         }
 
-        private void ReadDollarsMapping(XmlTextReader reader)
+        protected override void ProcessReader(string elementName, XmlTextReader reader)
         {
-            while(reader.Read())
+            switch(elementName)
             {
-                if(reader.Name == DiscountInCentsElement && reader.NodeType == XmlNodeType.EndElement)
+                case DiscountInCentsElement:
+                    DiscountInCents.ReadXml(reader);
                     break;
-
-                if(reader.NodeType != XmlNodeType.Element) continue;
-
-                DiscountInCents.Add(reader.Name, reader.ReadElementContentAsInt());
             }
         }
 
@@ -278,11 +273,11 @@ namespace Recurly
                 case DiscountType.Percent:
                     writer.WriteElementIntIfProvided(DiscountPercentElement, DiscountPercent);
                     break;
-                case DiscountType.Dollars:
+                case DiscountType.Dollars:                    
                     writer.WriteStartElement(DiscountInCentsElement);
-                    foreach(var kvp in DiscountInCents)
+                    foreach(var item in DiscountInCents)
                     {
-                        writer.WriteElementString(kvp.Key, kvp.Value.ToString());
+                        writer.WriteElementString(item.Currency, item.AmountInCents.ToString(CultureInfo.InvariantCulture));
                     }
                     writer.WriteEndElement();
                     break;

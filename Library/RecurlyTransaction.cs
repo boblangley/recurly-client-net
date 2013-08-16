@@ -2,19 +2,21 @@
 using System.Linq;
 using System.Net;
 using System.Xml;
+using System.Xml.Linq;
+using Recurly.Core;
 using Recurly.Properties;
 
 namespace Recurly
 {
-    public class RecurlyTransaction
+    public class RecurlyTransaction : BaseRecurlyApiObject
     {
         internal const string ElementName = "transaction";
 
-        public class TransactionDetails
+        public class TransactionDetails : BaseRecurlyApiObject
         {
-            public class TransactionAccount
+            public class TransactionAccount : BaseRecurlyApiObject
             {
-                public class TransactionBillingInfo
+                public class TransactionBillingInfo : BaseRecurlyApiObject
                 {
                     private const string FirstNameElement = "first_name";
                     public string FirstName { get; private set; }
@@ -52,62 +54,60 @@ namespace Recurly
                         ReadXml(reader);
                     }
 
-                    private void ReadXml(XmlTextReader reader)
+                    protected override string RootElementName
                     {
-                        while (reader.Read())
-                        {
-                            if (reader.Name == BillingInfoElement && reader.NodeType == XmlNodeType.EndElement)
-                                break;
+                        get { return BillingInfoElement; }
+                    }
 
-                            if (reader.NodeType != XmlNodeType.Element) continue;
-                            switch (reader.Name)
-                            {
-                                case FirstNameElement:
-                                    FirstName = reader.ReadElementContentAsString();
-                                    break;
-                                case LastNameElement:
-                                    LastName = reader.ReadElementContentAsString();
-                                    break;
-                                case Address1Element:
-                                    Address1 = reader.ReadElementContentAsString();
-                                    break;
-                                case Address2Element:
-                                    Address2 = reader.ReadElementContentAsString();
-                                    break;
-                                case CityElement:
-                                    City = reader.ReadElementContentAsString();
-                                    break;
-                                case StateElement:
-                                    State = reader.ReadElementContentAsString();
-                                    break;
-                                case ZipElement:
-                                    Zip = reader.ReadElementContentAsString();
-                                    break;
-                                case CountryElement:
-                                    Country = reader.ReadElementContentAsString();
-                                    break;
-                                case PhoneElement:
-                                    Phone = reader.ReadElementContentAsString();
-                                    break;
-                                case VatNumberElement:
-                                    VatNumber = reader.ReadElementContentAsString();
-                                    break;
-                                case FirstSixElement:
-                                    FirstSix = reader.ReadElementContentAsString();
-                                    break;
-                                case LastFourElement:
-                                    LastFour = reader.ReadElementContentAsString();
-                                    break;
-                                case CardTypeElement:
-                                    CardType = reader.ReadElementContentAsString();
-                                    break;
-                                case ExpirationMonthElement:
-                                    ExpirationMonth = reader.ReadElementContentAsInt();
-                                    break;
-                                case ExpirationYearElement:
-                                    ExpirationYear = reader.ReadElementContentAsInt();
-                                    break;
-                            }
+                    protected override void ProcessElement(XElement element)
+                    {
+                        switch (element.Name.LocalName)
+                        {
+                            case FirstNameElement:
+                                FirstName = element.Value;
+                                break;
+                            case LastNameElement:
+                                LastName = element.Value;
+                                break;
+                            case Address1Element:
+                                Address1 = element.Value;
+                                break;
+                            case Address2Element:
+                                Address2 = element.Value;
+                                break;
+                            case CityElement:
+                                City = element.Value;
+                                break;
+                            case StateElement:
+                                State = element.Value;
+                                break;
+                            case ZipElement:
+                                Zip = element.Value;
+                                break;
+                            case CountryElement:
+                                Country = element.Value;
+                                break;
+                            case PhoneElement:
+                                Phone = element.Value;
+                                break;
+                            case VatNumberElement:
+                                VatNumber = element.Value;
+                                break;
+                            case FirstSixElement:
+                                FirstSix = element.Value;
+                                break;
+                            case LastFourElement:
+                                LastFour = element.Value;
+                                break;
+                            case CardTypeElement:
+                                CardType = element.Value;
+                                break;
+                            case ExpirationMonthElement:
+                                ExpirationMonth = element.ToInt();
+                                break;
+                            case ExpirationYearElement:
+                                ExpirationYear = element.ToInt();
+                                break;
                         }
                     }
                 }
@@ -131,40 +131,44 @@ namespace Recurly
                     ReadXml(reader);
                 }
 
-                private void ReadXml(XmlTextReader reader)
+                protected override string RootElementName
                 {
-                    while (reader.Read())
+                    get { return AccountElement; }
+                }
+
+                protected override void ProcessElement(XElement element)
+                {
+                    switch (element.Name.LocalName)
                     {
-                        if (reader.Name == BillingInfoElement && reader.NodeType == XmlNodeType.EndElement)
+                        case AccountCodeElement:
+                            AccountCode = element.Value;
                             break;
 
-                        if (reader.NodeType != XmlNodeType.Element) continue;
-                        switch (reader.Name)
-                        {
-                            case AccountCodeElement:
-                                AccountCode = reader.ReadElementContentAsString();
-                                break;
+                        case FirstNameElement:
+                            FirstName = element.Value;
+                            break;
 
-                            case FirstNameElement:
-                                FirstName = reader.ReadElementContentAsString();
-                                break;
+                        case LastNameElement:
+                            LastName = element.Value;
+                            break;
 
-                            case LastNameElement:
-                                LastName = reader.ReadElementContentAsString();
-                                break;
+                        case EmailElement:
+                            Email = element.Value;
+                            break;
 
-                            case EmailElement:
-                                Email = reader.ReadElementContentAsString();
-                                break;
+                        case CompanyNameElement:
+                            CompanyName = element.Value;
+                            break;
+                    }
+                }
 
-                            case CompanyNameElement:
-                                CompanyName = reader.ReadElementContentAsString();
-                                break;
-
-                            case BillingInfoElement:
-                                BillingInfo = new TransactionBillingInfo(reader);
-                                break;
-                        }
+                protected override void ProcessReader(string elementName, XmlTextReader reader)
+                {
+                    switch(elementName)
+                    {
+                        case BillingInfoElement:
+                            BillingInfo = new TransactionBillingInfo(reader);
+                            break;
                     }
                 }
             }
@@ -177,20 +181,20 @@ namespace Recurly
                 ReadXml(reader);
             }
 
-            private void ReadXml(XmlTextReader reader)
+            protected override string RootElementName
             {
-                while (reader.Read())
-                {
-                    if (reader.Name == TransactionDetailsElement && reader.NodeType == XmlNodeType.EndElement)
-                        break;
+                get { return TransactionDetailsElement; }
+            }
 
-                    if (reader.NodeType != XmlNodeType.Element) continue;
-                    switch (reader.Name)
-                    {
-                        case AccountElement:
-                            Account = new TransactionAccount(reader);
-                            break;
-                    }
+            protected override void ProcessElement(XElement element) {}
+
+            protected override void ProcessReader(string elementName, XmlTextReader reader)
+            {
+                switch (elementName)
+                {
+                    case AccountElement:
+                        Account = new TransactionAccount(reader);
+                        break;
                 }
             }
         }
@@ -324,83 +328,87 @@ namespace Recurly
 
         #region Read and Write XML documents
 
-        internal void ReadXml(XmlTextReader reader)
+        protected override string RootElementName
         {
-            while (reader.Read())
-            {
-                // End of account element, get out of here
-                if ((reader.Name == ElementName) && reader.NodeType == XmlNodeType.EndElement)
-                    break;
+            get { return ElementName; }
+        }
 
-                if(reader.NodeType != XmlNodeType.Element) continue;
-                switch (reader.Name)
-                {
-                    case IdElement:
-                        Id = reader.ReadElementContentAsString();
-                        break;
-                    case AccountCodeElement:
-                        AccountCode = reader.ReadElementAttribute("href").Split('/').Last();
-                        break;
-                    case InvoiceNumberElement:
-                        InvoiceNumber = int.Parse(reader.ReadElementAttribute("href").Split('/').Last());
-                        break;
-                    case SubscriptionIdElement:
-                        SubscriptionId = reader.ReadElementAttribute("href").Split('/').Last();
-                        break;
-                    case ElementName:
-                        Type = reader.ReadElementAttributeAsEnum<TransactionType>("type");
-                        break;
-                    case ActionElement:
-                        Action = reader.ReadElementContentAsString();
-                        break;
-                    case AmountInCentsElement:
-                        AmountInCents = reader.ReadElementContentAsInt();
-                        break;
-                    case TaxInCentsElement:
-                        TaxInCents = reader.ReadElementContentAsInt();
-                        break;
-                    case CurrencyElement:
-                        Currency = reader.ReadElementContentAsString();
-                        break;
-                    case StatusElement:
-                        Status = reader.ReadElementContentAsString();
-                        break;
-                    case ReferenceElement:
-                        Reference = reader.ReadElementContentAsString();
-                        break;
-                    case TestElement:
-                        Test = reader.ReadElementContentAsBoolean();
-                        break;
-                    case VoidableElement:
-                        Voidable = reader.ReadElementContentAsBoolean();
-                        break;
-                    case RefundableElement:
-                        Refundable = reader.ReadElementContentAsBoolean();
-                        break;
-                    case CvvResultElement:
-                        CvvResultCode = reader.ReadElementAttribute("code");
-                        CvvResult = reader.ReadElementContentAsString();
-                        break;
-                    case AvsResultElement:
-                        AvsResultCode = reader.ReadElementAttribute("code");
-                        AvsResult = reader.ReadElementContentAsString();
-                        break;
-                    case AvsResultStreetElement:
-                        AvsResultStreet = reader.ReadElementContentAsString();
-                        break;
-                    case AvsResultPostalElement:
-                        AvsResultPostal = reader.ReadElementContentAsString();
-                        break;
-                    case CreatedAtElement:
-                        CreatedAt = reader.ReadElementContentAsDateTime();
-                        break;
-                    case TransactionErrorElement:
-                        TransactionError = reader.ReadElementContentAsString();
-                        break;
-                    case TransactionDetailsElement:
-                        Details = new TransactionDetails(reader);
-                        break;
-                }
+        protected override void ProcessElement(XElement element)
+        {
+            switch (element.Name.LocalName)
+            {
+                case IdElement:
+                    Id = element.Value;
+                    break;
+                case AccountCodeElement:
+                    AccountCode = element.GetHrefLinkId();
+                    break;
+                case InvoiceNumberElement:
+                    InvoiceNumber = element.GetHrefLinkId(int.Parse);
+                    break;
+                case SubscriptionIdElement:
+                    SubscriptionId = element.GetHrefLinkId();
+                    break;
+                case ElementName:
+                    Type = element.Attribute("type").ToEnum<TransactionType>();
+                    break;
+                case ActionElement:
+                    Action = element.Value;
+                    break;
+                case AmountInCentsElement:
+                    AmountInCents = element.ToInt();
+                    break;
+                case TaxInCentsElement:
+                    TaxInCents = element.ToInt();
+                    break;
+                case CurrencyElement:
+                    Currency = element.Value;
+                    break;
+                case StatusElement:
+                    Status = element.Value;
+                    break;
+                case ReferenceElement:
+                    Reference = element.Value;
+                    break;
+                case TestElement:
+                    Test = element.ToBool();
+                    break;
+                case VoidableElement:
+                    Voidable = element.ToBool();
+                    break;
+                case RefundableElement:
+                    Refundable = element.ToBool();
+                    break;
+                case CvvResultElement:
+                    CvvResultCode = element.Attribute("code").Value;
+                    CvvResult = element.Value;
+                    break;
+                case AvsResultElement:
+                    AvsResultCode = element.Attribute("code").Value;
+                    AvsResult = element.Value;
+                    break;
+                case AvsResultStreetElement:
+                    AvsResultStreet = element.Value;
+                    break;
+                case AvsResultPostalElement:
+                    AvsResultPostal = element.Value;
+                    break;
+                case CreatedAtElement:
+                    CreatedAt = element.ToDateTime();
+                    break;
+                case TransactionErrorElement:
+                    TransactionError = element.Value;
+                    break;
+            }
+        }
+
+        protected override void ProcessReader(string elementName, XmlTextReader reader)
+        {
+            switch(elementName)
+            {
+                case TransactionDetailsElement:
+                    Details = new TransactionDetails(reader);
+                    break;
             }
         }
 

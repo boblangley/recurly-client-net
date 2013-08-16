@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Xml;
+using System.Xml.Linq;
+using Recurly.Core;
 using Recurly.Properties;
 
 namespace Recurly
 {
-    public class RecurlyInvoice
+    public class RecurlyInvoice : BaseRecurlyApiObject
     {
         internal const string ElementName = "invoice";
 
@@ -111,65 +113,62 @@ namespace Recurly
 
         #region Read and Write XML documents
 
-        public void ReadXml(XmlTextReader reader)
+        protected override string RootElementName
         {
-            while (reader.Read())
+            get { return ElementName; }
+        }
+
+        protected override void ProcessElement(XElement element)
+        {
+            switch (element.Name.LocalName)
             {
-                // End of invoice element, get out of here
-                if (reader.Name == ElementName && reader.NodeType == XmlNodeType.EndElement)
+                case IdElement:
+                    Id = element.Value;
                     break;
 
-                if(reader.NodeType != XmlNodeType.Element) continue;
-                switch (reader.Name)
-                {
-                    case IdElement:
-                        Id = reader.ReadElementContentAsString();
-                        break;
+                case StateElement:
+                    State = element.ToEnum<InvoiceState>();
+                    break;
 
-                    case StateElement:
-                        State = reader.ReadElementContentAsEnum<InvoiceState>();
-                        break;
+                case InvoiceNumberElement:
+                    InvoiceNumber = element.ToInt();
+                    break;
 
-                    case InvoiceNumberElement:
-                        InvoiceNumber = reader.ReadElementContentAsInt();
-                        break;
+                case PurchaseOrderNumberElement:
+                    PurchaseOrderNumber = element.Value;
+                    break;
 
-                    case PurchaseOrderNumberElement:
-                        PurchaseOrderNumber = reader.ReadElementContentAsString();
-                        break;
+                case VatNumberElement:
+                    VatNumber = element.Value;
+                    break;
 
-                    case VatNumberElement:
-                        VatNumber = reader.ReadElementContentAsString();
-                        break;
+                case SubTotalInCentsElement:
+                    SubTotalInCents = element.ToInt();
+                    break;
 
-                    case SubTotalInCentsElement:
-                        SubTotalInCents = reader.ReadElementContentAsInt();
-                        break;
+                case TaxInCentsElement:
+                    TaxInCents = element.ToInt();
+                    break;
 
-                    case TaxInCentsElement:
-                        TaxInCents = reader.ReadElementContentAsInt();
-                        break;
+                case TotalInCentsElement:
+                    TotalInCents = element.ToInt();
+                    break;
 
-                    case TotalInCentsElement:
-                        TotalInCents = reader.ReadElementContentAsInt();
-                        break;
+                case CurrencyElement:
+                    Currency = element.Value;
+                    break;
 
-                    case CurrencyElement:
-                        Currency = reader.ReadElementContentAsString();
-                        break;
+                case CreatedAtElement:
+                    CreatedAt = element.ToDateTime();
+                    break;
 
-                    case CreatedAtElement:
-                        CreatedAt = reader.ReadElementContentAsDateTime();
-                        break;
+                case AccountCodeElement:
+                    AccountCode = element.Value.Split('/').Last();
+                    break;
 
-                    case AccountCodeElement:
-                        AccountCode = reader.ReadElementContentAsString().Split('/').Last();
-                        break;
-
-                    case TransactionsElement:
-                        //Transactions.ReadXml(reader); 
-                        break;
-                }
+                case TransactionsElement:
+                    //Transactions.ReadXml(reader); 
+                    break;
             }
         }
 

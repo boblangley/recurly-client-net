@@ -1,8 +1,10 @@
 ﻿using System.Xml;
+using System.Xml.Linq;
+using Recurly.Core;
 
 namespace Recurly
 {
-    public class RecurlyAddress
+    public class RecurlyAddress : BaseRecurlyApiObject
     {
         public const string ElementName = "account";
 
@@ -36,48 +38,40 @@ namespace Recurly
             ReadXml(reader);
         }
 
-        private void ReadXml(XmlTextReader reader)
+        protected override string RootElementName
         {
-            while(reader.Read())
-            {
-                // End of account element, get out of here
-                if(reader.Name == ElementName && reader.NodeType == XmlNodeType.EndElement)
-                    break;
-
-                if(reader.NodeType != XmlNodeType.Element) continue;
-                ReadAddressElements(reader);
-            }
+            get { return ElementName; }
         }
 
-        protected void ReadAddressElements(XmlTextReader reader)
+        protected override void ProcessElement(XElement element)
         {
-            switch (reader.Name)
+            switch (element.Name.LocalName)
             {
                 case Address1Element:
-                    Address1 = reader.ReadElementContentAsString();
+                    Address1 = element.Value;
                     break;
                 case Address2Element:
-                    Address2 = reader.ReadElementContentAsString();
+                    Address2 = element.Value;
                     break;
                 case CityElement:
-                    City = reader.ReadElementContentAsString();
+                    City = element.Value;
                     break;
                 case StateElement:
-                    State = reader.ReadElementContentAsString();
+                    State = element.Value;
                     break;
                 case ZipElement:
-                    Zip = reader.ReadElementContentAsString();
+                    Zip = element.Value;
                     break;
                 case CountryElement:
-                    Country = reader.ReadElementContentAsString();
+                    Country = element.Value;
                     break;
                 case PhoneElement:
-                    Phone = reader.ReadElementContentAsString();
+                    Phone = element.Value;
                     break;
             }
         }
 
-        public void WriteXml(XmlTextWriter writer)
+        internal void WriteXml(XmlTextWriter writer)
         {
             writer.WriteStartElement(ElementName);
             WriteAddressElements(writer);

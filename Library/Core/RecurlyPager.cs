@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
 
-namespace Recurly
+namespace Recurly.Core
 {
     internal abstract class RecurlyPager
     {

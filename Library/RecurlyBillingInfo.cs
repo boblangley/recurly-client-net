@@ -3,11 +3,16 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Xml;
+using System.Xml.Linq;
+using Recurly.Core;
 using Recurly.Properties;
 
 namespace Recurly
 {
-    public class RecurlyBillingInfo : RecurlyAddress
+    /// <summary>
+    /// Generic Billing Info
+    /// </summary>
+    public abstract class RecurlyBillingInfo : RecurlyAddress
     {
         internal new const string ElementName = "billing_info";
         
@@ -41,7 +46,7 @@ namespace Recurly
         /// <returns></returns>
         public static RecurlyBillingInfo Get(string accountCode)
         {
-            var billingInfo = new RecurlyBillingInfo(accountCode);
+            RecurlyBillingInfo billingInfo = new RecurlyCreditCardBillingInfo(accountCode);
 
             var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Get,
                 String.Format(Settings.Default.PathAccountBillingInfoGet,HttpUtility.UrlEncode(accountCode)), 
@@ -81,47 +86,40 @@ namespace Recurly
             account.Update();
         }
 
-        internal void ReadXml(XmlTextReader reader)
+        protected override string RootElementName
         {
-            while (reader.Read())
-            {
-                if (reader.Name == ElementName && reader.NodeType == XmlNodeType.EndElement)
-                    break;
-
-                if(reader.NodeType != XmlNodeType.Element) continue;
-                switch (reader.Name)
-                {
-                    case AccountCodeElement:
-                        AccountCode = reader.ReadElementAttribute("href").Split('/').Last();
-                        break;
-
-                    case FirstNameElement:
-                        FirstName = reader.ReadElementContentAsString();
-                        break;
-
-                    case LastNameElement:
-                        LastName = reader.ReadElementContentAsString();
-                        break;
-
-                    case VatNumberElement:
-                        VatNumber = reader.ReadElementContentAsString();
-                        break;
-
-                    case IpAddressElement:
-                        IpAddress = reader.ReadElementContentAsString();
-                        break;
-
-                    case IpAddressCountryElement:
-                        IpAddressCountry = reader.ReadElementContentAsString();
-                        break;
-                }
-                ReadAddressElements(reader);
-                ReadExtendedElements(reader);
-            }
+            get { return ElementName; }
         }
 
-        protected virtual void ReadExtendedElements(XmlTextReader reader)
+        protected override void ProcessElement(XElement element)
         {
+            switch (element.Name.LocalName)
+            {
+                case AccountCodeElement:
+                    AccountCode = element.GetHrefLinkId();
+                    break;
+
+                case FirstNameElement:
+                    FirstName = element.Value;
+                    break;
+
+                case LastNameElement:
+                    LastName = element.Value;
+                    break;
+
+                case VatNumberElement:
+                    VatNumber = element.Value;
+                    break;
+
+                case IpAddressElement:
+                    IpAddress = element.Value;
+                    break;
+
+                case IpAddressCountryElement:
+                    IpAddressCountry = element.Value;
+                    break;
+            }
+            base.ProcessElement(element);
         }
 
         internal new void WriteXml(XmlTextWriter writer)

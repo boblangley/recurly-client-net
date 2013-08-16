@@ -4,11 +4,13 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.Xml.Linq;
+using Recurly.Core;
 using Recurly.Properties;
 
 namespace Recurly
 {
-    public class RecurlyPlan
+    public class RecurlyPlan : BaseRecurlyApiObject
     {
         internal const string ElementName = "plan";
 
@@ -141,92 +143,96 @@ namespace Recurly
             return "Recurly Plan: " + PlanCode;
         }
 
-        public void ReadXml(XmlTextReader reader)
+        protected override string RootElementName
         {
-            while (reader.Read())
+            get { return ElementName; }
+        }
+
+        protected override void ProcessElement(XElement element)
+        {
+            switch (element.Name.LocalName)
             {
-                if (reader.Name == ElementName && reader.NodeType == XmlNodeType.EndElement)
+                case PlanCodeElement:
+                    PlanCode = element.Value;
                     break;
 
-                if(reader.NodeType != XmlNodeType.Element) continue;
-                switch (reader.Name)
-                {
-                    case PlanCodeElement:
-                        PlanCode = reader.ReadElementContentAsString();
-                        break;
+                case NameElement:
+                    Name = element.Value;
+                    break;
 
-                    case NameElement:
-                        Name = reader.ReadElementContentAsString();
-                        break;
+                case DescriptionElement:
+                    Description = element.Value;
+                    break;
 
-                    case DescriptionElement:
-                        Description = reader.ReadElementContentAsString();
-                        break;
+                case SuccessUrlElement:
+                    SuccessUrl = element.Value;
+                    break;
 
-                    case SuccessUrlElement:
-                        SuccessUrl = reader.ReadElementContentAsString();
-                        break;
+                case CancelUrlElement:
+                    CancelUrl = element.Value;
+                    break;
 
-                    case CancelUrlElement:
-                        CancelUrl = reader.ReadElementContentAsString();
-                        break;
+                case DisplayDonationAmountsElement:
+                    DisplayDonationAmounts = element.ToBool();
+                    break;
 
-                    case DisplayDonationAmountsElement:
-                        DisplayDonationAmounts = reader.ReadElementContentAsBoolean();
-                        break;
+                case DisplayQuantityElement:
+                    DisplayQuantity = element.ToBool();
+                    break;
 
-                    case DisplayQuantityElement:
-                        DisplayQuantity = reader.ReadElementContentAsBoolean();
-                        break;
+                case DisplayPhoneNumberElement:
+                    DisplayPhoneNumber = element.ToBool();
+                    break;
 
-                    case DisplayPhoneNumberElement:
-                        DisplayPhoneNumber = reader.ReadElementContentAsBoolean();
-                        break;
+                case BypassHostedConfirmationElement:
+                    BypassHostedConfirmation = element.ToBool();
+                    break;
 
-                    case BypassHostedConfirmationElement:
-                        BypassHostedConfirmation = reader.ReadElementContentAsBoolean();
-                        break;
+                case UnitNameElement:
+                    UnitName = element.Value;
+                    break;
 
-                    case UnitNameElement:
-                        UnitName = reader.ReadElementContentAsString();
-                        break;
+                case PaymentPageTosLinkElement:
+                    PaymentPageTosLink = element.Value;
+                    break;
 
-                    case PaymentPageTosLinkElement:
-                        PaymentPageTosLink = reader.ReadElementContentAsString();
-                        break;
+                case PlanIntervalLengthElement:
+                    PlanIntervalLength = element.ToInt();
+                    break;
 
-                    case PlanIntervalLengthElement:
-                        PlanIntervalLength = reader.ReadElementContentAsInt();
-                        break;
+                case PlanIntervalUnitElement:
+                    PlanIntervalUnit = element.ToEnum<IntervalUnit>();
+                    break;
 
-                    case PlanIntervalUnitElement:
-                        PlanIntervalUnit = reader.ReadElementContentAsEnum<IntervalUnit>();
-                        break;
+                case TrialIntervalLengthElement:
+                    TrialIntervalLength = element.ToInt();
+                    break;
 
-                    case TrialIntervalLengthElement:
-                        TrialIntervalLength = reader.ReadElementContentAsInt();
-                        break;
+                case TrialIntervalUnitElement:
+                    TrialIntervalUnit = element.ToEnum<IntervalUnit>();
+                    break;
 
-                    case TrialIntervalUnitElement:
-                        TrialIntervalUnit = reader.ReadElementContentAsEnum<IntervalUnit>();
-                        break;
+                case AccountingCodeElement:
+                    AccountingCode = element.Value;
+                    break;
 
-                    case AccountingCodeElement:
-                        AccountingCode = reader.ReadElementContentAsString();
-                        break;
+                case CreatedAtElement:
+                    CreatedAt = element.ToDateTime();
+                    break;
+            }
+        }
 
-                    case CreatedAtElement:
-                        CreatedAt = reader.ReadElementContentAsDateTime();
-                        break;
+        protected override void ProcessReader(string elementName, XmlTextReader reader)
+        {
+            switch(elementName)
+            {
+                case UnitAmountInCentsElement:
+                    UnitAmountInCents.ReadXml(reader);
+                    break;
 
-                    case UnitAmountInCentsElement:
-                        UnitAmountInCents.ReadXml(reader);
-                        break;
-
-                    case SetupFeeInCentsElement:
-                        SetupFeeInCents.ReadXml(reader);
-                        break;
-                }
+                case SetupFeeInCentsElement:
+                    SetupFeeInCents.ReadXml(reader);
+                    break;
             }
         }
 

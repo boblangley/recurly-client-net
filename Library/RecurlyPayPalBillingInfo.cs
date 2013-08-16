@@ -4,6 +4,9 @@ using System.Xml;
 
 namespace Recurly
 {
+    /// <summary>
+    /// Read-only payment details for PayPal
+    /// </summary>
     public class RecurlyPayPalBillingInfo : RecurlyBillingInfo
     {
         private const string PayPalBillingAgreementIdElement = "paypal_billing_agreement_id";
@@ -23,12 +26,13 @@ namespace Recurly
         {
         }
 
-        protected override void ReadExtendedElements(XmlTextReader reader)
+        protected override void ProcessElement(System.Xml.Linq.XElement element)
         {
-            switch (reader.Name)
+            base.ProcessElement(element);
+            switch (element.Name.LocalName)
             {
                 case PayPalBillingAgreementIdElement:
-                    PayPalBillingAgreementId = reader.ReadElementContentAsString();
+                    PayPalBillingAgreementId = element.Value;
                     break;
             }
         }

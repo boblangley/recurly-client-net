@@ -1,16 +1,17 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Recurly Client Library")]
-[assembly: AssemblyDescription("Recurly makes subscription billing easy for .NET developers.")]
+[assembly: AssemblyTitle("RecurlyCommandLIne")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Bob Langley")]
-[assembly: AssemblyProduct("Recurly")]
-[assembly: AssemblyCopyright("Recurly, Inc & Bob Langley")]
-[assembly: AssemblyTrademark("Recurly, Inc.")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("RecurlyCommandLIne")]
+[assembly: AssemblyCopyright("Copyright ©  2013")]
+[assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -19,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("25932cc0-45c7-4db4-b8d5-dd172555522c")]
+[assembly: Guid("d01bc953-b08f-4ed7-af98-d5c3bc7b436c")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -31,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2.0.1.0")]
-[assembly: AssemblyFileVersion("2.0.1.0")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]

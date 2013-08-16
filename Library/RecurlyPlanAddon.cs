@@ -3,11 +3,13 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Xml;
+using System.Xml.Linq;
+using Recurly.Core;
 using Recurly.Properties;
 
 namespace Recurly
 {
-    public class RecurlyPlanAddon
+    public class RecurlyPlanAddon : BaseRecurlyApiObject
     {
         internal const string ElementName = "add_on";
 
@@ -90,45 +92,48 @@ namespace Recurly
                                          String.Format(Settings.Default.PathPlanAddonCRUD, PlanCode.UrlEncode()));
         }
 
-        public void ReadXml(XmlTextReader reader)
+        protected override string RootElementName
         {
-            while(reader.Read())
+            get { return ElementName; }
+        }
+
+        protected override void ProcessElement(XElement element)
+        {
+            switch (element.Name.LocalName)
             {
-                // End of account element, get out of here
-                if (reader.Name == ElementName && reader.NodeType == XmlNodeType.EndElement)
+                case AddonCodeElement:
+                    AddonCode = element.Value;
                     break;
 
-                if(reader.NodeType != XmlNodeType.Element) continue;
-                switch(reader.Name)
-                {
-                    case AddonCodeElement:
-                        AddonCode = reader.ReadElementContentAsString();
-                        break;
+                case PlanCodeElement:
+                    PlanCode = element.GetHrefLinkId();
+                    break;
 
-                    case PlanCodeElement:
-                        PlanCode = reader.ReadElementAttribute("href").Split('/').Last();
-                        break;
+                case NameElement:
+                    Name = element.Value;
+                    break;
 
-                    case NameElement:
-                        Name = reader.ReadElementContentAsString();
-                        break;
+                case DisplayQuantityOnHostedPageElement:
+                    DisplayQuantityOnHostedPage = element.ToBool();
+                    break;
 
-                    case DisplayQuantityOnHostedPageElement:
-                        DisplayQuantityOnHostedPage = reader.ReadElementContentAsBoolean();
-                        break;
+                case DefaultQuantityElement:
+                    DefaultQuantity = element.ToInt();
+                    break;
 
-                    case DefaultQuantityElement:
-                        DefaultQuantity = reader.ReadElementContentAsInt();
-                        break;
+                case CreatedAtElement:
+                    CreateAt = element.ToDateTime();
+                    break;
+            }
+        }
 
-                    case UnitAmountInCentsElement:
-                        UnitAmountInCents.ReadXml(reader);
-                        break;
-
-                    case CreatedAtElement:
-                        CreateAt = reader.ReadElementContentAsDateTime();
-                        break;
-                }
+        protected override void ProcessReader(string elementName, XmlTextReader reader)
+        {
+            switch(elementName)
+            {
+                case UnitAmountInCentsElement:
+                    UnitAmountInCents.ReadXml(reader);
+                    break;
             }
         }
 

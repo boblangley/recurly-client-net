@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Xml;
+using System.Xml.Linq;
 
-namespace Recurly
+namespace Recurly.Core
 {
     internal static class RecurlyUtilities
     {
@@ -18,6 +19,46 @@ namespace Recurly
         {
             var value = reader.ReadElementContentAsString();
             return ParseEnumString<T>(value);
+        }
+
+        public static T ToEnum<T>(this XElement element) where T : struct
+        {
+            return ParseEnumString<T>(element.Value);
+        }
+
+        public static string GetHrefLinkId(this XElement element)
+        {
+            return element.Attribute("href").Value.Split('/').Last();
+        }
+
+        public static T GetHrefLinkId<T>(this XElement element, Func<string, T> parseDelegate)
+        {
+            return parseDelegate(GetHrefLinkId(element));
+        }
+
+        public static T ToEnum<T>(this XAttribute attribute) where T : struct
+        {
+            return ParseEnumString<T>(attribute.Value);
+        }
+
+        public static int ToInt(this XElement element)
+        {
+            return int.Parse(element.Value);
+        }
+
+        public static DateTime ToDateTime(this XElement element)
+        {
+            return DateTime.Parse(element.Value);
+        }
+
+        public static bool ToBool(this XElement element)
+        {
+            return bool.Parse(element.Value);
+        }
+
+        public static T? ToNullable<T>(this XElement element, Func<string, T> parseElementDelegate) where T : struct
+        {
+            return String.IsNullOrWhiteSpace(element.Value) ? new T?() : parseElementDelegate(element.Value);
         }
 
         public static T ReadElementAttributeAsEnum<T>(this XmlTextReader reader, string attributeName) where T : struct
@@ -37,7 +78,8 @@ namespace Recurly
 
         public static T? ReadElementContentAsNullable<T>(this XmlTextReader reader, Func<XmlTextReader,T> elementHasValueReadDelegate) where T: struct, IComparable
         {
-            return reader.IsEmptyElement ? new T?() : elementHasValueReadDelegate(reader);
+            var value = reader.Value;
+            return String.IsNullOrWhiteSpace(value) ? new T?() : elementHasValueReadDelegate(reader);
         }
 
         public static void WriteElementStringIfProvided(this XmlTextWriter writer, string elementName, string value)

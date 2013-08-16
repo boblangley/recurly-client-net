@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml;
+using Recurly.Core;
 using Recurly.Properties;
 
 namespace Recurly

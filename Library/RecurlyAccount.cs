@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Net;
 using System.Xml;
+using System.Xml.Linq;
+using Recurly.Core;
 using Recurly.Properties;
 
 namespace Recurly
@@ -8,8 +10,11 @@ namespace Recurly
     /// <summary>
     /// An account in Recurly.
     /// </summary>
-    public class RecurlyAccount
+    public class RecurlyAccount : BaseRecurlyApiObject
     {
+        /// <summary>
+        /// State of the account
+        /// </summary>
         public enum AccountState
         {
             Active,
@@ -177,6 +182,15 @@ namespace Recurly
             return adjustment.Create() ? adjustment : null;
         }
 
+        /// <summary>
+        /// Make a charge to the account
+        /// </summary>
+        /// <param name="unitAmountInCents"></param>
+        /// <param name="description"></param>
+        /// <param name="accountingCode"></param>
+        /// <param name="currency"></param>
+        /// <param name="quantity"></param>
+        /// <returns></returns>
         public RecurlyAdjustment Charge(int unitAmountInCents, string description, string accountingCode = null,
                                 string currency = null, int quantity = 1)
         {
@@ -184,7 +198,15 @@ namespace Recurly
             return Adjust(unitAmountInCents, description, accountingCode, currency, quantity);
         }
 
-
+        /// <summary>
+        /// Apply a credit to the account
+        /// </summary>
+        /// <param name="unitAmountInCents"></param>
+        /// <param name="description"></param>
+        /// <param name="accountingCode"></param>
+        /// <param name="currency"></param>
+        /// <param name="quantity"></param>
+        /// <returns></returns>
         public RecurlyAdjustment Credit(int unitAmountInCents, string description, string accountingCode = null,
                                         string currency = null, int quantity = 1)
         {
@@ -226,63 +248,77 @@ namespace Recurly
             return RecurlyTransactionList.ListAccountTransactions(AccountCode, state, type, pageSize);
         }
 
+        /// <summary>
+        /// Returns a list of subscriptions for an account.
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="pageSize"></param>
+        /// <returns></returns>
+        public RecurlySubscriptionList ListSubscriptions(RecurlySubscription.SubscriptionState state = RecurlySubscription.SubscriptionState.Live, int pageSize = RecurlyPager.DefaultPageSize)
+        {
+            return RecurlySubscriptionList.GetAccountSubscriptions(AccountCode, state, pageSize);
+        }
+
         #region Read and Write XML documents
 
-        private void ReadXml(XmlTextReader reader)
+        protected override string RootElementName
         {
-            while (reader.Read())
+            get { return ElementName; }
+        }
+
+        protected override void ProcessElement(XElement element)
+        {
+            switch (element.Name.LocalName)
             {
-                // End of account element, get out of here
-                if (reader.Name == ElementName && reader.NodeType == XmlNodeType.EndElement)
+                case AccountCodeElement:
+                    AccountCode = element.Value;
                     break;
 
-                if(reader.NodeType != XmlNodeType.Element) continue;
-                switch (reader.Name)
-                {
-                    case AccountCodeElement:
-                        AccountCode = reader.ReadElementContentAsString();
-                        break;
+                case StateElement:
+                    State = element.ToEnum<AccountState>();
+                    break;
 
-                    case StateElement:
-                        State = reader.ReadElementContentAsEnum<AccountState>();
-                        break;
+                case UsernameElement:
+                    Username = element.Value;
+                    break;
 
-                    case UsernameElement:
-                        Username = reader.ReadElementContentAsString();
-                        break;
+                case FirstNameElement:
+                    FirstName = element.Value;
+                    break;
 
-                    case FirstNameElement:
-                        FirstName = reader.ReadElementContentAsString();
-                        break;
+                case LastNameElement:
+                    LastName = element.Value;
+                    break;
 
-                    case LastNameElement:
-                        LastName = reader.ReadElementContentAsString();
-                        break;
+                case EmailElement:
+                    Email = element.Value;
+                    break;
 
-                    case EmailElement:
-                        Email = reader.ReadElementContentAsString();
-                        break;
+                case CompanyNameElement:
+                    CompanyName = element.Value;
+                    break;
 
-                    case CompanyNameElement:
-                        CompanyName = reader.ReadElementContentAsString();
-                        break;
+                case AcceptLanguageElement:
+                    AcceptLanguage = element.Value;
+                    break;
 
-                    case AcceptLanguageElement:
-                        AcceptLanguage = reader.ReadElementContentAsString();
-                        break;
+                case HostedLoginTokenElement:
+                    HostedLoginToken = element.Value;
+                    break;
 
-                    case HostedLoginTokenElement:
-                        HostedLoginToken = reader.ReadElementContentAsString();
-                        break;
+                case CreatedAtElement:
+                    CreatedAt = element.ToDateTime();
+                    break;
+            }
+        }
 
-                    case CreatedAtElement:
-                        CreatedAt = reader.ReadElementContentAsDateTime();
-                        break;
-
-                    case RecurlyAddress.ElementName:
-                        Address = new RecurlyAddress(reader);
-                        break;
-                }
+        protected override void ProcessReader(string elementName, XmlTextReader reader)
+        {
+            switch(elementName)
+            {
+                case RecurlyAddress.ElementName:
+                    Address = new RecurlyAddress(reader);
+                    break;
             }
         }
 

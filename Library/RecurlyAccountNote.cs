@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Xml;
+using System.Xml.Linq;
+using Recurly.Core;
 
 namespace Recurly
 {
-    public class RecurlyAccountNote
+    public class RecurlyAccountNote : BaseRecurlyApiObject
     {
         public const string ElementName = "note";
 
@@ -22,6 +24,27 @@ namespace Recurly
             ReadXml(reader);
         }
 
+        protected override string RootElementName
+        {
+            get { return ElementName; }
+        }
+
+        protected override void ProcessElement(XElement element)
+        {
+            switch (element.Name.LocalName)
+            {
+                case AccountCodeElement:
+                    AccountCode = element.Attribute("href").Value.Split('/').Last();
+                    break;
+                case MessageElement:
+                    Message = element.Value;
+                    break;
+                case CreatedAtElement:
+                    CreatedAt = element.ToDateTime();
+                    break;
+            }
+        }
+
         private void ReadXml(XmlTextReader reader)
         {
             while(reader.Read())
@@ -30,18 +53,7 @@ namespace Recurly
                     break;
 
                 if(reader.NodeType != XmlNodeType.Element) continue;
-                switch(reader.Name)
-                {
-                    case AccountCodeElement:
-                        AccountCode = reader.ReadElementAttribute("href").Split('/').Last();
-                        break;
-                    case MessageElement:
-                        Message = reader.ReadElementContentAsString();
-                        break;
-                    case CreatedAtElement:
-                        CreatedAt = reader.ReadElementContentAsDateTime();
-                        break;
-                }
+
             }
         }
     }

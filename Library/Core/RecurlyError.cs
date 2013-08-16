@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Xml;
 
-namespace Recurly
+namespace Recurly.Core
 {
     /// <summary>
     /// An individual error message.
