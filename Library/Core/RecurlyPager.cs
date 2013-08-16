@@ -107,8 +107,11 @@ namespace Recurly.Core
             if(!string.IsNullOrWhiteSpace(webHeaderCollection.Get("X-Records")))
                 TotalRecords = int.Parse(webHeaderCollection.Get("X-Records"));
 
-            if(string.IsNullOrWhiteSpace(webHeaderCollection.Get("Link"))) return;
-            
+            _nextLink = END;
+
+            var link = webHeaderCollection.Get("Link");
+
+            if(string.IsNullOrWhiteSpace(link)) return;
             var match = Regex.Match(webHeaderCollection.Get("Link"), MatchPattern);
             _nextLink = match.Success ? match.Groups[1].Value : END;
         }
