@@ -168,8 +168,7 @@ namespace Recurly.Core
             Action<XmlTextWriter> writeXmlDelegate, Action<XmlTextReader> readXmlDelegate, Action<WebHeaderCollection> headersDelegate)
         {
             var request = (HttpWebRequest)WebRequest.Create(ServerUrl + urlPath);
-            request.Accept = "application/xml";      // Tells the server to return XML instead of HTML
-            request.ContentType = "application/xml; charset=utf-8"; // The request is an XML document
+            request.Accept = "application/xml";      // Tells the server to return XML instead of HTML            
             request.SendChunked = false;             // Send it all as one request
             request.UserAgent = UserAgent;
             request.Headers.Add(HttpRequestHeader.Authorization, AuthorizationHeaderValue);
@@ -178,14 +177,26 @@ namespace Recurly.Core
             System.Diagnostics.Debug.WriteLine("Recurly: Requesting {0} {1}", 
                 request.Method, request.RequestUri);
 
-            if ((method == HttpRequestMethod.Post || method == HttpRequestMethod.Put) && (writeXmlDelegate != null))
+            if (method == HttpRequestMethod.Post || method == HttpRequestMethod.Put)
             {
+                request.ContentLength = 0;
                 // 60 second timeout -- some payment gateways (e.g. PayPal) can take a while to respond
                 request.Timeout = 60000;
 
-                // Write POST/PUT body
-                using (var requestStream = request.GetRequestStream())
-                    WritePostParameters(requestStream, writeXmlDelegate);
+                if(writeXmlDelegate != null)
+                {
+                    request.ContentType = "application/xml; charset=utf-8"; // The request is an XML document
+                    // Write POST/PUT body
+                    using (var ms = new MemoryStream())
+                    {
+                        WritePostParameters(ms, writeXmlDelegate);
+
+                        var bytes = ms.ToArray();
+
+                        request.ContentLength = bytes.Length;
+                        request.GetRequestStream().Write(bytes, 0, bytes.Length);
+                    }
+                }
             }
 
             try
