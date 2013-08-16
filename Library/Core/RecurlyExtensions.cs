@@ -26,10 +26,6 @@ namespace Recurly.Core
             var child = element.Element(name);
             if(child != null)
                 processDelegate(child);
-            else
-            {
-                Console.WriteLine("Child {0} not found in {1}",name,element);
-            }
         }
 
         public static T ToEnum<T>(this XElement element) where T : struct

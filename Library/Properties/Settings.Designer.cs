@@ -421,7 +421,7 @@ namespace Recurly.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("/account/{0}/transactions")]
+        [global::System.Configuration.DefaultSettingValueAttribute("/accounts/{0}/transactions")]
         public string PathAccountTransactionsList {
             get {
                 return ((string)(this["PathAccountTransactionsList"]));

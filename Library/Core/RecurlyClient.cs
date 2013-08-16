@@ -224,11 +224,11 @@ namespace Recurly.Core
                             return ReadWebResponse(response, readXmlDelegate, headersDelegate);
 
                         case HttpStatusCode.NotFound:
-                            return response.StatusCode;
-                            //errors = RecurlyError.ReadResponseAndParseErrors(response);
-                            //if (errors.Length >= 0)
-                            //    throw new NotFoundException(errors[0].Message, errors);
-                            //throw new NotFoundException("The requested object was not found.", errors);
+                            //return response.StatusCode;
+                            errors = RecurlyError.ReadResponseAndParseErrors(response);
+                            if (errors.Length >= 0)
+                                throw new NotFoundException(errors[0].Message, errors);
+                            throw new NotFoundException("The requested object was not found.", errors);
 
                         case HttpStatusCode.Unauthorized:
                         case HttpStatusCode.Forbidden:
