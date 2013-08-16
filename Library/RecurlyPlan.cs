@@ -122,10 +122,12 @@ namespace Recurly
             return statusCode == HttpStatusCode.OK;
         }
 
-        public void Delete()
+        public bool Delete()
         {
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
                                          String.Format(Settings.Default.PathPlanUpdate, PlanCode.UrlEncode()));
+
+            return RecurlyClient.OkOrAccepted(statusCode);
         }
 
         /// <summary>

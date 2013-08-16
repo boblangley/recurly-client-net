@@ -125,10 +125,12 @@ namespace Recurly
         /// <summary>
         /// Delete a non-invoiced adjustment from an account.
         /// </summary>
-        public void Delete()
+        public bool Delete()
         {
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
                                          String.Format(Settings.Default.PathAccountAdjustmentDelete, AccountCode));
+
+            return RecurlyClient.OkOrAccepted(statusCode);
         }
 
         protected override void ReadElement(XElement element)

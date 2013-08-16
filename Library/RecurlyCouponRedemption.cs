@@ -53,11 +53,13 @@ namespace Recurly
         /// Occasionally, you may want to remove a coupon from an account
         /// <remarks>Recurly will automatically remove coupons after they expire or are otherwise no longer valid for an account. If you want to remove a coupon from an account before it expires, you may use the examples below. Please note: the coupon will still count towards the "maximum redemption total" of a coupon.</remarks>
         /// </summary>
-        public void Remove()
+        public bool Remove()
         {
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
                                                           String.Format(Settings.Default.PathAccountCouponRedemption,
                                                                         AccountCode));
+
+            return RecurlyClient.OkOrAccepted(statusCode);
         }
 
         public static RecurlyCouponRedemption GetInvoiceInvoice(int invoiceNumber)

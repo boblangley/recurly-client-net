@@ -254,20 +254,24 @@ namespace Recurly
         /// <summary>
         /// If the transaction has not settled and you perform a full refund, the transaction will be voided instead. Voided transactions typically do not show up on the customer's card statement. If the transaction has settled, a refund will be performed.
         /// </summary>
-        public void Refund()
+        public bool Refund()
         {
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
                                          String.Format(Settings.Default.PathTransactionFullRefund, Id.UrlEncode()));
+
+            return RecurlyClient.OkOrAccepted(statusCode);
         }
 
         /// <summary>
         /// If the transaction has not settled and you attempt a partial refund, the request will fail. Please wait until the transaction has settled (typically 24 hours) before performing a partial refund. This advice varies depending on when your payment gateway settles the transaction.
         /// </summary>
         /// <param name="amountInCents"></param>
-        public void Refund(int amountInCents)
+        public bool Refund(int amountInCents)
         {
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
                                          String.Format(Settings.Default.PathTransactionPartialRefund, Id.UrlEncode(), amountInCents));
+
+            return RecurlyClient.OkOrAccepted(statusCode);
         }
 
         #region Read and Write XML documents

@@ -88,45 +88,53 @@ namespace Recurly
         /// <summary>
         /// Create a new account in Recurly
         /// </summary>
-        public void Create(RecurlyBillingInfo billingInfo = null)
+        public bool Create(RecurlyBillingInfo billingInfo = null)
         {
             _billingInfo = billingInfo;
 
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Post, 
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Post, 
                 Settings.Default.PathAccountCreate,
                 writer => WriteXml(writer),
                 ReadXml,
                 null);
+
+            return statusCode == HttpStatusCode.Created;
         }
 
         /// <summary>
         /// Update an existing account in Recurly
         /// </summary>
-        public void Update(RecurlyBillingInfo billingInfo = null)
+        public bool Update(RecurlyBillingInfo billingInfo = null)
         {
             _billingInfo = billingInfo;
 
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put, 
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put, 
                 String.Format(Settings.Default.PathAccountUpdate, System.Web.HttpUtility.UrlEncode(AccountCode)),
                 writer => WriteXml(writer,false));
+
+            return RecurlyClient.OkOrAccepted(statusCode);
         }
 
         /// <summary>
         /// Marks an account as closed and cancels any active subscriptions. Any saved billing information will also be permanently removed from the account.
         /// </summary>
-        public void Close()
+        public bool Close()
         {
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
                                          String.Format(Settings.Default.PathAccountClose, AccountCode));
+
+            return RecurlyClient.OkOrAccepted(statusCode);
         }
 
         /// <summary>
         ///  Transitions a closed account back to active.
         /// </summary>
-        public void Reopen()
+        public bool Reopen()
         {
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
                                          String.Format(Settings.Default.PathAccountReopen, AccountCode));
+
+            return RecurlyClient.OkOrAccepted(statusCode);
         }
 
         /// <summary>
@@ -322,53 +330,3 @@ namespace Recurly
         #endregion
     }
 }
-
-
-        //public static RecurlyCouponRedemption CouponRedemption(string accountCode)
-        //{
-        //    var redemption = new RecurlyCouponRedemption()
-        //        {
-        //            AccountCode = accountCode
-        //        };
-        //    var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Get,
-        //                                 UrlPrefix + System.Web.HttpUtility.UrlEncode(accountCode) + "/redemption",
-        //                                 redemption.ReadXml);
-
-        //    return statusCode == HttpStatusCode.NotFound ? null : redemption;
-        //}
-
-        //public static void RemoveCouponRedemption(string accountCode)
-        //{
-        //    RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
-        //                                 UrlPrefix + System.Web.HttpUtility.UrlEncode(accountCode) + "/redemption");
-        //}
-
-        ///// <summary>
-        ///// Lookup the active coupon for this account.
-        ///// </summary>
-        ///// <returns></returns>
-        //public RecurlyCouponRedemption GetActiveCoupon()
-        //{
-        //    return CouponRedemption(AccountCode);
-        //}
-
-        ///// <summary>
-        ///// Redeem a coupon on the account.
-        ///// </summary>
-        ///// <param name="couponCode"></param>
-        ///// <param name="currency"></param>
-        ///// <returns></returns>
-        //public RecurlyCouponRedemption RedeemCoupon(string couponCode, string currency = "USD")
-        //{
-        //    return RecurlyCoupon.Redeem(couponCode, AccountCode, currency);
-        //}
-
-        //public static RecurlyInvoiceList GetInvoices(string accountCode)
-        //{
-            
-        //}
-
-        //public RecurlyInvoiceList Invoices()
-        //{
-            
-        //}

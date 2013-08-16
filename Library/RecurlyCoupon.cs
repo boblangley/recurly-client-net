@@ -160,9 +160,10 @@ namespace Recurly
         /// <summary>
         /// Deactivate the coupon so customers can no longer redeem the coupon
         /// </summary>
-        public void Deactivate()
+        public bool Deactivate()
         {
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete, Settings.Default.PathCouponDeactivate);
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete, Settings.Default.PathCouponDeactivate);
+            return RecurlyClient.OkOrAccepted(statusCode);
         }
 
         #region Read and Write XML documents

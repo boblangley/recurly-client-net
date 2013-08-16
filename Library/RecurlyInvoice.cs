@@ -73,16 +73,20 @@ namespace Recurly
             return statusCode == HttpStatusCode.OK ? invoice : null;
         }
 
-        public void MarkSuccessful()
+        public bool MarkSuccessful()
         {
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
                                          String.Format(Settings.Default.PathInvoiceMarkSuccessful, InvoiceNumber));
+
+            return RecurlyClient.OkOrAccepted(statusCode);
         }
 
-        public void MarkFailed()
+        public bool MarkFailed()
         {
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
                                          String.Format(Settings.Default.PathInvoiceMarkFailed, InvoiceNumber));
+
+            return RecurlyClient.OkOrAccepted(statusCode);
         }
 
         /// <summary>

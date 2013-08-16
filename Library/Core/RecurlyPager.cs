@@ -96,7 +96,10 @@ namespace Recurly.Core
             if(string.IsNullOrWhiteSpace(_nextLink))
                 _nextLink = DefaultPath;
 
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Get, _nextLink, reader => ReadXml(items,reader), ReadHeaders);
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Get, _nextLink, reader => ReadXml(items,reader), ReadHeaders);
+
+            if(statusCode == HttpStatusCode.NotFound)
+                _nextLink = END;
 
             return items;
         }

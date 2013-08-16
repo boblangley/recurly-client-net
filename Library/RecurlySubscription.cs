@@ -222,54 +222,64 @@ namespace Recurly
         /// </summary>
         /// <param name="timeframe"></param>
         /// <param name="newPlanCode"></param>
-        public void Update(ChangeTimeframe timeframe, string newPlanCode = null)
+        public bool Update(ChangeTimeframe timeframe, string newPlanCode = null)
         {
             if (newPlanCode != null && String.IsNullOrWhiteSpace(newPlanCode)) throw new ArgumentException("newPlanCode", "A new PlanCode cannot be empty if provided");
             
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
                                          String.Format(Settings.Default.PathSubscriptionUpdate, Id),
                                          writer => WriteChangeXml(writer, timeframe, newPlanCode), ReadXml);
+
+            return RecurlyClient.OkOrAccepted(statusCode);
         }
 
         /// <summary>
         /// Cancel a subscription so it remains active and then expires at the end of the current bill cycle.
         /// </summary>
-        public void Cancel()
+        public bool Cancel()
         {
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
                                          String.Format(Settings.Default.PathSubscriptionCancel, Id));
+
+            return RecurlyClient.OkOrAccepted(statusCode);
         }
 
         /// <summary>
         /// Reactivate a canceled subscription so it renews at the end of the current bill cycle.
         /// </summary>
-        public void Reactivate()
+        public bool Reactivate()
         {
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
                                          String.Format(Settings.Default.PathSubscriptionReactivate, Id));
+
+            return RecurlyClient.OkOrAccepted(statusCode);
         }
 
         /// <summary>
         /// You may remove any stored billing information for an account. If the account has a subscription, the renewal will go into past due unless you update the billing info before the renewal occurs.
         /// </summary>
         /// <param name="refund"></param>
-        public void Terminate(RefundType refund)
+        public bool Terminate(RefundType refund)
         {
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
                                          String.Format(Settings.Default.PathSubscriptionTerminate, Id,
                                                        Enum.GetName(refund.GetType(), refund).ToLower()));
+
+            return RecurlyClient.OkOrAccepted(statusCode);
         }
 
         /// <summary>
         /// Delays renewal of a subscription
         /// </summary>
         /// <param name="nextRenewalDate"></param>
-        public void Postpone(DateTime nextRenewalDate)
+        public bool Postpone(DateTime nextRenewalDate)
         {
             if (nextRenewalDate.Date <= DateTime.Now.Date) throw new ArgumentOutOfRangeException("nextRenewalDate","Renewal date must be in the future to postpone");
-            RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
                                          String.Format(Settings.Default.PathSubscriptionPostpone, Id,
                                                        nextRenewalDate.ToString("s")));
+
+            return RecurlyClient.OkOrAccepted(statusCode);
         }
 
         #region Read and Write XML documents
