@@ -427,5 +427,14 @@ namespace Recurly.Properties {
                 return ((string)(this["PathAccountTransactionsList"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://{0}.recurly.com/v2")]
+        public string BaseServerUrl {
+            get {
+                return ((string)(this["BaseServerUrl"]));
+            }
+        }
     }
 }

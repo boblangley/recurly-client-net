@@ -6,7 +6,7 @@ namespace Recurly
 {
     public class RecurlySubscriptionAddon
     {
-        public const string ElementName = "subscription_add_on";
+        internal const string ElementName = "subscription_add_on";
 
         private const string AddonCodeElement = "add_on_code";
         public string AddonCode { get; private set; }

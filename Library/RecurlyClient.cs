@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Xml;
+using Recurly.Properties;
 
 namespace Recurly
 {
@@ -11,8 +12,6 @@ namespace Recurly
     /// </summary>
     internal class RecurlyClient
     {
-        private const string ProductionServerUrl = "https://{0}.recurly.com/v2";
-
         private static string _apiKey;
         private static string _apiSubdomain;
         private static string _apiPrivateKey;
@@ -238,7 +237,7 @@ namespace Recurly
         {
             get
             {
-                return String.Format(ProductionServerUrl,_apiSubdomain);
+                return String.Format(Settings.Default.BaseServerUrl, ApiSubdomain);
             }
         }
 

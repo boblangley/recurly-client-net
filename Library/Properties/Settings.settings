@@ -137,5 +137,8 @@
     <Setting Name="PathAccountTransactionsList" Type="System.String" Scope="Application">
       <Value Profile="(Default)">/account/{0}/transactions</Value>
     </Setting>
+    <Setting Name="BaseServerUrl" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">https://{0}.recurly.com/v2</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
