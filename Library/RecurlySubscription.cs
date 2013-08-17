@@ -239,7 +239,8 @@ namespace Recurly
         public bool Cancel()
         {
             var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
-                                         String.Format(Settings.Default.PathSubscriptionCancel, Id));
+                                         String.Format(Settings.Default.PathSubscriptionCancel, Id),
+                                         WriteXml);
 
             return RecurlyClient.OkOrAccepted(statusCode);
         }
@@ -250,7 +251,8 @@ namespace Recurly
         public bool Reactivate()
         {
             var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
-                                         String.Format(Settings.Default.PathSubscriptionReactivate, Id));
+                                         String.Format(Settings.Default.PathSubscriptionReactivate, Id),
+                                         WriteXml);
 
             return RecurlyClient.OkOrAccepted(statusCode);
         }
@@ -263,7 +265,8 @@ namespace Recurly
         {
             var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
                                          String.Format(Settings.Default.PathSubscriptionTerminate, Id,
-                                                       Enum.GetName(refund.GetType(), refund).ToLower()));
+                                                       Enum.GetName(refund.GetType(), refund).ToLower()),
+                                                       WriteXml);
 
             return RecurlyClient.OkOrAccepted(statusCode);
         }
@@ -277,7 +280,8 @@ namespace Recurly
             if (nextRenewalDate.Date <= DateTime.Now.Date) throw new ArgumentOutOfRangeException("nextRenewalDate","Renewal date must be in the future to postpone");
             var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
                                          String.Format(Settings.Default.PathSubscriptionPostpone, Id,
-                                                       nextRenewalDate.ToString("s")));
+                                                       nextRenewalDate.ToString("s")),
+                                                       WriteXml);
 
             return RecurlyClient.OkOrAccepted(statusCode);
         }
@@ -373,6 +377,12 @@ namespace Recurly
                 writer.WriteElementListIfAny(AddonsElement, Addons, (w, a) => a.WriteXml(w));
                 WriteManualInvoiceElement(writer);
             writer.WriteEndElement(); // End: subscription
+        }
+
+        internal void WriteXml(XmlTextWriter writer)
+        {
+            writer.WriteStartElement(ElementName);
+            writer.WriteEndElement();
         }
 
         private void WriteManualInvoiceElement(XmlTextWriter writer)

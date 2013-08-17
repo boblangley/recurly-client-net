@@ -132,7 +132,8 @@ namespace Recurly
         public bool Reopen()
         {
             var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
-                                         String.Format(Settings.Default.PathAccountReopen, AccountCode));
+                                         String.Format(Settings.Default.PathAccountReopen, AccountCode),
+                                         writer => WriteXml(writer));
 
             return RecurlyClient.OkOrAccepted(statusCode);
         }

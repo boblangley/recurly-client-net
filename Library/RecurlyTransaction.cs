@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Xml;
@@ -8,22 +9,6 @@ using Recurly.Properties;
 
 namespace Recurly
 {
-    public class TransactionError
-    {
-        public string Code { get; private set; }
-        public string Category { get; private set; }
-        public string MerchantMessage { get; private set; }
-        public string CustomerMessage { get; private set; }
-
-        internal TransactionError(XElement element)
-        {
-            element.ProcessChild("error_code", e => Code = e.Value);
-            element.ProcessChild("error_category", e => Category = e.Value);
-            element.ProcessChild("merchant_message", e => MerchantMessage = e.Value);
-            element.ProcessChild("customer_message", e => CustomerMessage = e.Value);
-        }
-    }
-
     public class RecurlyTransaction : BaseRecurlyApiObject
     {
         internal const string ElementName = "transaction";
@@ -235,7 +220,7 @@ namespace Recurly
         public DateTime CreatedAt { get; private set; }
 
         private const string TransactionErrorElement = "transaction_error";
-        public TransactionError TransactionError { get; private set; }
+        public RecurlyTransactionError TransactionError { get; private set; }
 
         private const string TransactionDetailsElement = "details";
         /// <summary>
@@ -270,25 +255,25 @@ namespace Recurly
 
         /// <summary>
         /// If the transaction has not settled and you perform a full refund, the transaction will be voided instead. Voided transactions typically do not show up on the customer's card statement. If the transaction has settled, a refund will be performed.
-        /// </summary>
-        public bool Refund()
-        {
-            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
-                                         String.Format(Settings.Default.PathTransactionFullRefund, Id.UrlEncode()));
-
-            return RecurlyClient.OkOrAccepted(statusCode);
-        }
-
-        /// <summary>
         /// If the transaction has not settled and you attempt a partial refund, the request will fail. Please wait until the transaction has settled (typically 24 hours) before performing a partial refund. This advice varies depending on when your payment gateway settles the transaction.
         /// </summary>
-        /// <param name="amountInCents"></param>
-        public bool Refund(int amountInCents)
+        /// <param name="amountInCents">The amount (in cents) to refund (refunds fully if null or not provided).</param>
+        /// <returns>The updated original transaction if voided, a new refund transaction, or null if the transaction isn't voidable or refundable.</returns>
+        public RecurlyTransaction Refund(int? amountInCents = null)
         {
-            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
-                                         String.Format(Settings.Default.PathTransactionPartialRefund, Id.UrlEncode(), amountInCents));
+            var transaction = new RecurlyTransaction();
 
-            return RecurlyClient.OkOrAccepted(statusCode);
+            var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Delete,
+                String.Format(Settings.Default.PathTransactionRefund, Id.UrlEncode(), amountInCents.HasValue ? amountInCents.Value.ToString(CultureInfo.InvariantCulture) : String.Empty),
+                                         reader =>
+                                             {
+                                                 var element = XDocument.Load(reader).Root;
+                                                 transaction.ReadElement(element);
+                                                 if (transaction.Id == Id)
+                                                     ReadElement(element);
+                                             });
+
+            return RecurlyClient.OkOrAccepted(statusCode) ? transaction.Id == Id ? this : transaction : null;
         }
 
         #region Read and Write XML documents
@@ -359,7 +344,7 @@ namespace Recurly
                 CreatedAt = e.ToDateTime());
 
             element.ProcessChild(TransactionErrorElement, e =>
-                TransactionError = new TransactionError(e));
+                TransactionError = new RecurlyTransactionError(e));
 
             element.ProcessChild(TransactionDetailsElement, e =>
                 Details = new TransactionDetails(e));

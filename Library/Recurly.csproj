@@ -107,6 +107,7 @@
     <Compile Include="Exceptions\TemporarilyUnavailableException.cs" />
     <Compile Include="Exceptions\ValidationException.cs" />
     <Compile Include="Core\RecurlyClient.cs" />
+    <Compile Include="RecurlyTransactionError.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

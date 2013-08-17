@@ -125,10 +125,7 @@
     <Setting Name="PathTransactionGet" Type="System.String" Scope="Application">
       <Value Profile="(Default)">/transactions/{0}</Value>
     </Setting>
-    <Setting Name="PathTransactionFullRefund" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">/transactions/{0}</Value>
-    </Setting>
-    <Setting Name="PathTransactionPartialRefund" Type="System.String" Scope="Application">
+    <Setting Name="PathTransactionRefund" Type="System.String" Scope="Application">
       <Value Profile="(Default)">/transactions/{0}?amount_in_cents={1}</Value>
     </Setting>
     <Setting Name="PathTransactionsList" Type="System.String" Scope="Application">

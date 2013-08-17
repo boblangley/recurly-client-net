@@ -394,19 +394,10 @@ namespace Recurly.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("/transactions/{0}")]
-        public string PathTransactionFullRefund {
-            get {
-                return ((string)(this["PathTransactionFullRefund"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("/transactions/{0}?amount_in_cents={1}")]
-        public string PathTransactionPartialRefund {
+        public string PathTransactionRefund {
             get {
-                return ((string)(this["PathTransactionPartialRefund"]));
+                return ((string)(this["PathTransactionRefund"]));
             }
         }
         

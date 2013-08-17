@@ -38,6 +38,11 @@ namespace Recurly
             ReadElement(element);
         }
 
+        /// <summary>
+        /// Get the coupon redemption for the account , if any
+        /// </summary>
+        /// <param name="accountNumber"></param>
+        /// <returns></returns>
         public static RecurlyCouponRedemption GetAccountRedemption(string accountNumber)
         {
             var redemption = new RecurlyCouponRedemption();
@@ -62,7 +67,12 @@ namespace Recurly
             return RecurlyClient.OkOrAccepted(statusCode);
         }
 
-        public static RecurlyCouponRedemption GetInvoiceInvoice(int invoiceNumber)
+        /// <summary>
+        /// Get the redemption, if any, for the invoice
+        /// </summary>
+        /// <param name="invoiceNumber"></param>
+        /// <returns></returns>
+        public static RecurlyCouponRedemption GetInvoiceRedemption(int invoiceNumber)
         {
             var redemption = new RecurlyCouponRedemption();
 

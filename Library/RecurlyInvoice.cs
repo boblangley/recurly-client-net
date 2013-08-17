@@ -76,7 +76,8 @@ namespace Recurly
         public bool MarkSuccessful()
         {
             var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
-                                         String.Format(Settings.Default.PathInvoiceMarkSuccessful, InvoiceNumber));
+                                         String.Format(Settings.Default.PathInvoiceMarkSuccessful, InvoiceNumber),
+                                         WriteXml);
 
             return RecurlyClient.OkOrAccepted(statusCode);
         }
@@ -84,7 +85,8 @@ namespace Recurly
         public bool MarkFailed()
         {
             var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
-                                         String.Format(Settings.Default.PathInvoiceMarkFailed, InvoiceNumber));
+                                         String.Format(Settings.Default.PathInvoiceMarkFailed, InvoiceNumber),
+                                         WriteXml);
 
             return RecurlyClient.OkOrAccepted(statusCode);
         }
@@ -112,7 +114,7 @@ namespace Recurly
         /// <returns></returns>
         public RecurlyCouponRedemption CouponRedemption()
         {
-            return RecurlyCouponRedemption.GetInvoiceInvoice(InvoiceNumber);
+            return RecurlyCouponRedemption.GetInvoiceRedemption(InvoiceNumber);
         }
 
         #region Read and Write XML documents
@@ -163,6 +165,12 @@ namespace Recurly
         private void ProcessTransaction(XElement element)
         {
             Transactions.Add(new RecurlyTransaction(element));
+        }
+
+        internal void WriteXml(XmlTextWriter writer)
+        {
+            writer.WriteStartElement(ElementName);
+            writer.WriteEndElement();
         }
 
         #endregion
