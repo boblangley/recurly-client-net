@@ -8,6 +8,22 @@ using Recurly.Properties;
 
 namespace Recurly
 {
+    public class TransactionError
+    {
+        public string Code { get; private set; }
+        public string Category { get; private set; }
+        public string MerchantMessage { get; private set; }
+        public string CustomerMessage { get; private set; }
+
+        internal TransactionError(XElement element)
+        {
+            element.ProcessChild("error_code", e => Code = e.Value);
+            element.ProcessChild("error_category", e => Category = e.Value);
+            element.ProcessChild("merchant_message", e => MerchantMessage = e.Value);
+            element.ProcessChild("customer_message", e => CustomerMessage = e.Value);
+        }
+    }
+
     public class RecurlyTransaction : BaseRecurlyApiObject
     {
         internal const string ElementName = "transaction";
@@ -148,7 +164,8 @@ namespace Recurly
             All,
             Authorization,
             Refund,
-            Purchase
+            Purchase,
+            Verify
         }
 
         public enum TransactionState
@@ -218,7 +235,7 @@ namespace Recurly
         public DateTime CreatedAt { get; private set; }
 
         private const string TransactionErrorElement = "transaction_error";
-        public string TransactionError { get; private set; }
+        public TransactionError TransactionError { get; private set; }
 
         private const string TransactionDetailsElement = "details";
         /// <summary>
@@ -342,7 +359,7 @@ namespace Recurly
                 CreatedAt = e.ToDateTime());
 
             element.ProcessChild(TransactionErrorElement, e =>
-                TransactionError = e.Value);
+                TransactionError = new TransactionError(e));
 
             element.ProcessChild(TransactionDetailsElement, e =>
                 Details = new TransactionDetails(e));
