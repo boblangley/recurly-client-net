@@ -277,7 +277,7 @@ namespace Recurly
         #region Read and Write XML documents
 
         protected override void ReadElement(XElement element)
-        {
+        {            
             element.ProcessChild(IdElement, e =>
                 Id = e.Value);
 
@@ -290,11 +290,11 @@ namespace Recurly
             element.ProcessChild(SubscriptionIdElement, e =>
                 SubscriptionId = e.GetHrefLinkId());
 
-            element.ProcessChild(ElementName, e =>
-                Type = e.Attribute("type").ToEnum<TransactionType>());
-
             element.ProcessChild(ActionElement, e =>
-                Action = e.Value);
+                {
+                    Action = e.Value;
+                    Type = e.ToEnum<TransactionType>();
+                });
 
             element.ProcessChild(AmountInCentsElement, e =>
                 AmountInCents = e.ToInt());
