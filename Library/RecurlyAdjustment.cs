@@ -113,7 +113,7 @@ namespace Recurly
 
             if (Quantity < 0) throw new InvalidOperationException("Quantity must be greater than 0");
 
-            if (!String.IsNullOrWhiteSpace(AccountCode) && AccountingCode.Length > 20)
+            if (!String.IsNullOrWhiteSpace(AccountingCode) && AccountingCode.Length > 20)
                 throw new InvalidOperationException("AccountingCode cannot be longer than 20 characters");
 
             var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Post,
