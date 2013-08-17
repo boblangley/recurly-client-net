@@ -86,8 +86,6 @@ namespace Recurly
                 throw new InvalidOperationException("AccountCode must be assigned before an adjustment can be created");
             if (unitAmountInCents > MaxAdjustementUnitAmountInCents)
                 throw new InvalidOperationException("UnitAmountInCents cannot exceed " + MaxAdjustementUnitAmountInCents);
-            if (accountCode.Length > 20)
-                throw new InvalidOperationException("AccountingCode cannot be longer than 20 characters");
 
             AccountCode = accountCode;
             UnitAmountInCents = unitAmountInCents;
@@ -114,6 +112,9 @@ namespace Recurly
             }
 
             if (Quantity < 0) throw new InvalidOperationException("Quantity must be greater than 0");
+
+            if (!String.IsNullOrWhiteSpace(AccountCode) && AccountingCode.Length > 20)
+                throw new InvalidOperationException("AccountingCode cannot be longer than 20 characters");
 
             var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Post,
                                          String.Format(Settings.Default.PathAccountAdjustmentCreate, AccountCode),
