@@ -174,7 +174,7 @@ namespace Recurly
         private void WriteXml(XmlTextWriter writer)
         {
             writer.WriteStartElement(ElementName);
-                writer.WriteElementString(AccountCodeCreateElement,AccountCode);
+                //writer.WriteElementString(AccountCodeCreateElement,AccountCode); //Shows required in API documentation but is not sent in the PHP client
                 writer.WriteElementString(CurrencyElement,Currency);
                 writer.WriteElementString(UnitAmountInCentsElement,UnitAmountInCents.ToString(CultureInfo.InvariantCulture));
                 writer.WriteElementStringIfProvided(DescriptionElement,Description);

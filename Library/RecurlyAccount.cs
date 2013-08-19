@@ -186,7 +186,8 @@ namespace Recurly
                 {
                     Description = description,
                     Currency = string.IsNullOrWhiteSpace(currency) ? RecurlyClient.Currency : currency,
-                    Quantity = quantity
+                    Quantity = quantity,
+                    AccountingCode = accountingCode
                 };
             return adjustment.Create() ? adjustment : null;
         }

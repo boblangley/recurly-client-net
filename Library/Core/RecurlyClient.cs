@@ -193,6 +193,8 @@ namespace Recurly.Core
 
                         var bytes = ms.ToArray();
 
+                        System.Diagnostics.Debug.WriteLine("Recurly Body: {0}{1}",Environment.NewLine,Encoding.UTF8.GetString(bytes));
+
                         request.ContentLength = bytes.Length;
                         request.GetRequestStream().Write(bytes, 0, bytes.Length);
                     }
@@ -269,6 +271,8 @@ namespace Recurly.Core
         private static HttpStatusCode ReadWebResponse(HttpWebResponse response, Action<XmlTextReader> readXmlDelegate, Action<WebHeaderCollection> headersDelegate)
         {
             var statusCode = response.StatusCode;
+
+            System.Diagnostics.Debug.WriteLine("StatusCode: {0}", statusCode);
 
             if(headersDelegate != null)
             {
