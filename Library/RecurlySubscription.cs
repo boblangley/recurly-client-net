@@ -53,6 +53,21 @@ namespace Recurly
         /// <summary>
         /// 
         /// </summary>
+        public class NewPlanOptions
+        {
+            /// <summary>
+            /// New Plan Code.
+            /// </summary>
+            public string PlanCode { get; set; }
+            /// <summary>
+            /// Override the new plan code unit amount in cents
+            /// </summary>
+            public int? UnitAmountInCents { get; set; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public class RecurlyManualInvoiceDetails
         {            
             private const string NetTermsElement = "net_terms";
@@ -222,13 +237,19 @@ namespace Recurly
         /// </summary>
         /// <param name="timeframe"></param>
         /// <param name="newPlanCode"></param>
-        public bool Update(ChangeTimeframe timeframe, string newPlanCode = null)
+        /// <param name="unitAmountInCents"></param>
+        public bool Update(ChangeTimeframe timeframe, NewPlanOptions newPlan = null)
         {
-            if (newPlanCode != null && String.IsNullOrWhiteSpace(newPlanCode)) throw new ArgumentException("newPlanCode", "A new PlanCode cannot be empty if provided");
-            
+            if (newPlan != null && String.IsNullOrWhiteSpace(newPlan.PlanCode)) throw new ArgumentException("newPlan", "A new PlanCode cannot be empty if provided");
+
+            if(newPlan != null)
+            {
+                UnitAmountInCents = newPlan.UnitAmountInCents;
+            }
+
             var statusCode = RecurlyClient.PerformRequest(RecurlyClient.HttpRequestMethod.Put,
                                          String.Format(Settings.Default.PathSubscriptionUpdate, Id),
-                                         writer => WriteChangeXml(writer, timeframe, newPlanCode), ReadXml);
+                                         writer => WriteChangeXml(writer, timeframe, newPlan.PlanCode), ReadXml);
 
             return RecurlyClient.OkOrAccepted(statusCode);
         }
