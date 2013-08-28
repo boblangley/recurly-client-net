@@ -38,7 +38,7 @@ namespace Recurly
                 get { return "subscription"; }
             }
 
-            protected override RecurlySubscription InitialzeChild(XElement element)
+            protected override RecurlySubscription InitializeChild(XElement element)
             {
                 return new RecurlySubscription(element);
             }
@@ -74,6 +74,11 @@ namespace Recurly
 
         public bool EndOfPages {
             get { return _pager.EndOfPages; }
+        }
+
+        public int TotalCount
+        {
+            get { return _pager.TotalRecords; }
         }
     }
 }

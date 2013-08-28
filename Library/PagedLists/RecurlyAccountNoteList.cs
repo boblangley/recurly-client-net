@@ -34,7 +34,7 @@ namespace Recurly
                 get { return RecurlyAccountNote.ElementName; }
             }
 
-            protected override RecurlyAccountNote InitialzeChild(XElement element)
+            protected override RecurlyAccountNote InitializeChild(XElement element)
             {
                 return new RecurlyAccountNote(element);
             }
@@ -59,6 +59,11 @@ namespace Recurly
 
         public bool EndOfPages {
             get { return _pager.EndOfPages; }
+        }
+
+        public int TotalCount
+        {
+            get { return _pager.TotalRecords; }
         }
     }
 }

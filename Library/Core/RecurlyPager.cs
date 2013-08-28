@@ -19,7 +19,7 @@ namespace Recurly.Core
 
     internal abstract class RecurlyPager<T> : RecurlyPager
     {
-        private const string MatchPattern = "/<([^>]+)>; rel=\"next\"/";
+        private const string MatchPattern = "\\<(.*?)\\>";
         private const string END = "EOP";
         private readonly int _pageSize;
 
@@ -66,7 +66,7 @@ namespace Recurly.Core
                     urlBuilder.AppendFormat("?{0}", paramStrings.First());
                     paramStrings.Skip(1).ToList().ForEach(p => urlBuilder.AppendFormat("&{0}", p));
                 }
-
+                System.Diagnostics.Debug.WriteLine(urlBuilder.ToString(),"Default Pager Path");
                 return urlBuilder.ToString();
             }
         }
@@ -88,6 +88,7 @@ namespace Recurly.Core
         /// <returns>New list of items or null if the last page has been retrieved</returns>
         public List<T> Next()
         {
+            System.Diagnostics.Debug.WriteLine(_nextLink,"_nextLink");
             if (_nextLink == END)
                 return null;
 
@@ -114,9 +115,11 @@ namespace Recurly.Core
             _nextLink = END;
 
             var link = webHeaderCollection.Get("Link");
-
+            System.Diagnostics.Debug.WriteLine(link, "Link Header");
             if(string.IsNullOrWhiteSpace(link)) return;
-            var match = Regex.Match(webHeaderCollection.Get("Link"), MatchPattern);
+            var next = link.Split(',').FirstOrDefault(l => l.Contains("next"));
+            if(next == null) return;
+            var match = Regex.Match(next, MatchPattern);
             _nextLink = match.Success ? match.Groups[1].Value : END;
         }
 
@@ -124,9 +127,9 @@ namespace Recurly.Core
         {
             var root = XDocument.Load(reader).Element(ParentElementName);
 
-            root.Elements(ChildElementName).ToList().ForEach(e => items.Add(InitialzeChild(e)));
+            root.Elements(ChildElementName).ToList().ForEach(e => items.Add(InitializeChild(e)));
         }
 
-        protected abstract T InitialzeChild(XElement element);
+        protected abstract T InitializeChild(XElement element);
     }
 }

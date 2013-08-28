@@ -38,7 +38,7 @@ namespace Recurly
                 get { return RecurlyAdjustment.ElementName; }
             }
 
-            protected override RecurlyAdjustment InitialzeChild(XElement element)
+            protected override RecurlyAdjustment InitializeChild(XElement element)
             {
                 return new RecurlyAdjustment(element);
             }
@@ -68,5 +68,11 @@ namespace Recurly
         }
 
         public bool EndOfPages { get { return _pager.EndOfPages; } }
+
+
+        public int TotalCount
+        {
+            get { return _pager.TotalRecords; }
+        }
     }
 }

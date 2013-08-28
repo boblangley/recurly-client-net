@@ -33,7 +33,7 @@ namespace Recurly
                 get { return RecurlyCoupon.ElementName; }
             }
 
-            protected override RecurlyCoupon InitialzeChild(XElement element)
+            protected override RecurlyCoupon InitializeChild(XElement element)
             {
                 return new RecurlyCoupon(element);
             }
@@ -60,6 +60,11 @@ namespace Recurly
         public bool EndOfPages
         {
             get { return _pager.EndOfPages; }
+        }
+
+        public int TotalCount
+        {
+            get { return _pager.TotalRecords; }
         }
     }
 }

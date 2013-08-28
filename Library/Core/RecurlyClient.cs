@@ -167,7 +167,8 @@ namespace Recurly.Core
         public static HttpStatusCode PerformRequest(HttpRequestMethod method, string urlPath,
             Action<XmlTextWriter> writeXmlDelegate, Action<XmlTextReader> readXmlDelegate, Action<WebHeaderCollection> headersDelegate)
         {
-            var request = (HttpWebRequest)WebRequest.Create(ServerUrl + urlPath);
+            var url = urlPath.Contains("http") ? urlPath : ServerUrl + urlPath;
+            var request = (HttpWebRequest)WebRequest.Create(url);
             request.Accept = "application/xml";      // Tells the server to return XML instead of HTML            
             request.SendChunked = false;             // Send it all as one request
             request.UserAgent = UserAgent;

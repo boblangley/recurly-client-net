@@ -8,5 +8,6 @@ namespace Recurly
     {
         List<T> NextPage();
         bool EndOfPages { get; }
+        int TotalCount { get; }
     }
 }

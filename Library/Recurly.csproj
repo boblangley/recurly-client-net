@@ -125,6 +125,7 @@
     <None Include="app.config" />
     <None Include="NuGet\RecurlyDotNet.nuspec">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
