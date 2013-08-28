@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Recurly.Core;
 
 namespace Recurly
@@ -14,11 +15,11 @@ namespace Recurly
         /// </summary>
         internal const int HttpStatusCode = 422;
 
-        internal ValidationException(RecurlyError[] errors)
+        internal ValidationException(List<RecurlyError> errors)
             : base("The information being saved is not valid.", errors)
         { }
 
-        internal ValidationException(string message, RecurlyError[] errors)
+        internal ValidationException(string message, List<RecurlyError> errors)
             : base(message, errors)
         { }
     }

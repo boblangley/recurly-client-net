@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Recurly.Core;
 
 namespace Recurly
@@ -8,7 +9,7 @@ namespace Recurly
     /// </summary>
     public class NotFoundException : RecurlyException
     {
-        internal NotFoundException(string message, RecurlyError[] errors)
+        internal NotFoundException(string message, List<RecurlyError> errors)
             : base(message, errors)
         { }
     }

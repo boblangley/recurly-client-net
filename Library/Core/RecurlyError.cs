@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace Recurly.Core
 {
@@ -11,80 +13,51 @@ namespace Recurly.Core
     /// </summary>
     public class RecurlyError
     {
-        /// <summary>
-        /// Error message
-        /// </summary>
-        public string Message { get; internal set; }
-        /// <summary>
-        /// Field causing the error, if appropriate.
-        /// </summary>
-        public string Field { get; internal set; }
-        /// <summary>
-        /// Error code set for certain transaction failures.
-        /// </summary>
-        public string Code { get; internal set; }
+        public string Description { get; internal set; }
 
-        internal RecurlyError(XmlTextReader reader)
+        public string Symbol { get; internal set; }
+
+        internal RecurlyError(XElement element)
         {
-            if (reader.HasAttributes)
-            {
-                try
-                {
-                    Field = reader.GetAttribute("field");
-                }
-                catch (ArgumentOutOfRangeException)
-                { }
-                try
-                {
-                    Code = reader.GetAttribute("code");
-                }
-                catch (ArgumentOutOfRangeException)
-                { }
-            }
-
-            Message = reader.ReadElementContentAsString();
+            element.ProcessChild("symbol",x => Symbol = x.Value);
+            element.ProcessChild("description",x => Description = x.Value);
         }
 
         public override string ToString()
         {
-            if (!String.IsNullOrEmpty(Field))
-                return String.Format("{0} (Field: {1})", Message, Field);
-            return !String.IsNullOrEmpty(Code) ? String.Format("{0} (Code: {1})", Message, Code) : Message;
+            return string.Format("{0}: {1}", Symbol, Description);
         }
 
-        internal static RecurlyError[] ReadResponseAndParseErrors(HttpWebResponse response)
+        internal static List<RecurlyError> ReadResponseAndParseErrors(HttpWebResponse response)
         {
             if (response == null)
-                return new RecurlyError[0];
+                return new List<RecurlyError>();
 
             using (var responseStream = response.GetResponseStream())
             {
                 var errors = new List<RecurlyError>();
+
+                XDocument doc = null;
 
                 try
                 {
                     if(responseStream == null)
                         throw new Exception("The response stream returned is null");
 
-                    using (var xmlReader = new XmlTextReader(responseStream))
-                    {
-                        // Parse errors collection
-                        while (xmlReader.Read())
-                        {
-                            if (xmlReader.Name == "errors" && xmlReader.NodeType == XmlNodeType.EndElement)
-                                break;
+                    doc = XDocument.Load(responseStream);
 
-                            if (xmlReader.Name == "error" && xmlReader.NodeType == XmlNodeType.Element)
-                                errors.Add(new RecurlyError(xmlReader));
-                        }
-                    }
+                    if(doc.Root != null) errors = doc.Root.Elements("error").Select(e => new RecurlyError(e)).ToList();
                 }
-                catch (XmlException)
+                catch (XmlException ex)
                 {
-                    // Do nothing
+                    if(doc != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine(doc.ToString(),"Response Body");
+                    }
+                    System.Diagnostics.Debug.WriteLine(ex.ToString(),"Error");
                 }
 
-                return errors.ToArray();
+                return errors;
             }
         }
     }

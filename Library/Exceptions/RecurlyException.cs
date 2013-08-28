@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Recurly.Core;
 
 namespace Recurly
@@ -11,9 +12,9 @@ namespace Recurly
         /// <summary>
         /// Error details from Recurly
         /// </summary>
-        public RecurlyError[] Errors { get; private set; }
+        public List<RecurlyError> Errors { get; private set; }
 
-        internal RecurlyException(RecurlyError[] errors)
+        internal RecurlyException(List<RecurlyError> errors)
         {
             Errors = errors;
         }
@@ -26,7 +27,7 @@ namespace Recurly
             : base(message, innerException)
         { }
 
-        internal RecurlyException(string message, RecurlyError[] errors)
+        internal RecurlyException(string message, List<RecurlyError> errors)
             : base(message)
         {
             Errors = errors;

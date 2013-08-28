@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Recurly.Core;
 
 namespace Recurly
@@ -8,7 +9,7 @@ namespace Recurly
     /// </summary>
     public class RecurlyServerException : RecurlyException
     {
-        internal RecurlyServerException(RecurlyError[] errors)
+        internal RecurlyServerException(List<RecurlyError> errors)
             : base("Recurly experienced an internal server error.", errors)
         { }
 

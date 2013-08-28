@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -213,7 +214,7 @@ namespace Recurly.Core
                 {
                     var response = (HttpWebResponse)ex.Response;
                     var statusCode = response.StatusCode;
-                    RecurlyError[] errors;
+                    List<RecurlyError> errors;
 
                     System.Diagnostics.Debug.WriteLine("Recurly Library Received: {0} - {1}",
                                                        (int) statusCode, statusCode);
@@ -229,8 +230,8 @@ namespace Recurly.Core
                         case HttpStatusCode.NotFound:
                             //return response.StatusCode;
                             errors = RecurlyError.ReadResponseAndParseErrors(response);
-                            if (errors.Length >= 0)
-                                throw new NotFoundException(errors[0].Message, errors);
+                            if (errors.Any())
+                                throw new NotFoundException(errors[0].Symbol, errors);
                             throw new NotFoundException("The requested object was not found.", errors);
 
                         case HttpStatusCode.Unauthorized:
