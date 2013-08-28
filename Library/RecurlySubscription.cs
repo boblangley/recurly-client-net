@@ -28,7 +28,8 @@ namespace Recurly
             Expired,
             In_Trial,
             Past_Due,
-            Live
+            Live,
+            Pending_Update
         }
 
         public enum ChangeTimeframe
