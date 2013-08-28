@@ -319,7 +319,7 @@ namespace Recurly
             element.ProcessChild(AccountCodeElement, e =>
                 AccountCode = e.GetHrefLinkId());
 
-            element.ProcessChild(PlanCodeElement, e =>
+            element.ProcessDescendant(PlanCodeElement, e =>
                 PlanCode = e.Value);
 
             element.ProcessChild(IdElement, e =>

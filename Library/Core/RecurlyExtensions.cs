@@ -28,6 +28,13 @@ namespace Recurly.Core
                 processDelegate(child);
         }
 
+        public static void ProcessDescendant(this XElement element, string name, Action<XElement> processDelegate)
+        {
+            var descendant = element.Descendants(name).FirstOrDefault();
+            if(descendant != null)
+                processDelegate(descendant);
+        }
+
         public static T ToEnum<T>(this XElement element) where T : struct
         {
             return ParseEnumString<T>(element.Value);

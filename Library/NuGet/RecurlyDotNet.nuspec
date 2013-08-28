@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>RecurlyDotNet</id>
+        <version>2.0.7</version>
+        <title>Recurly Client Library for .NET</title>
+        <authors>Bob Langley</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>API v2 Client for Recurly</description>
+        <tags>recurly</tags>
+    </metadata>
+    <files>
+        <file src="..\Recurly.dll" target="lib\net40\Recurly.dll" />
+        <file src="..\Recurly.pdb" target="lib\net40\Recurly.pdb" />
+        <file src="..\Recurly.XML" target="lib\net40\Recurly.XML" />
+    </files>
+</package>

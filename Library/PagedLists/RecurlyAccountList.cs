@@ -55,7 +55,7 @@ namespace Recurly
         /// <param name="state"></param>
         /// <param name="pageSize"></param>
         /// <returns></returns>
-        public RecurlyAccountList ListAccounts(RecurlyAccount.AccountState state = RecurlyAccount.AccountState.Active,
+        public static RecurlyAccountList ListAccounts(RecurlyAccount.AccountState state = RecurlyAccount.AccountState.Active,
                                                int pageSize = RecurlyPager.DefaultPageSize)
         {
             return new RecurlyAccountList(state,pageSize);
