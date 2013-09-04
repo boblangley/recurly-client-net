@@ -29,7 +29,8 @@ namespace Recurly
             In_Trial,
             Past_Due,
             Live,
-            Pending_Update
+            Pending_Update,
+            Failed
         }
 
         public enum ChangeTimeframe
